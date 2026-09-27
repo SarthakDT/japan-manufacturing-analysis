@@ -1,0 +1,196 @@
+{
+  "test": "LQ rank stability across the reference-year-2016 employment break",
+  "years_compared": [
+    2014,
+    2016
+  ],
+  "sources": {
+    "2014": "manufacturing_2014_tablemuni3-01.csv",
+    "2016": "manufacturing_2016_table3-01.csv"
+  },
+  "measure": "従業者数, establishments with 4+ employees",
+  "pairs_available": 1120,
+  "pairs_possible": 1128,
+  "pooled_spearman_rho": 0.9868577786767093,
+  "pooled_spearman_p": 0.0,
+  "per_industry": [
+    {
+      "industry_code": "32",
+      "industry_name": "その他の製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.94599907493062,
+      "p_value": 1.2041706151790212e-23
+    },
+    {
+      "industry_code": "20",
+      "industry_name": "なめし革・同製品・毛皮製造業",
+      "n_prefectures": 45,
+      "spearman_rho": 0.9474308300395257,
+      "p_value": 6.671022124919738e-23
+    },
+    {
+      "industry_code": "15",
+      "industry_name": "印刷・同関連業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9629972247918593,
+      "p_value": 2.9143380794593808e-27
+    },
+    {
+      "industry_code": "30",
+      "industry_name": "情報通信機械器具製造業",
+      "n_prefectures": 43,
+      "spearman_rho": 0.9681365146481427,
+      "p_value": 2.830965486256919e-26
+    },
+    {
+      "industry_code": "24",
+      "industry_name": "金属製品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9693570767807586,
+      "p_value": 4.4727623512849225e-29
+    },
+    {
+      "industry_code": "17",
+      "industry_name": "石油製品・石炭製品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9719010175763182,
+      "p_value": 6.534496501086085e-30
+    },
+    {
+      "industry_code": "25",
+      "industry_name": "はん用機械器具製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9727104532839964,
+      "p_value": 3.41394056736221e-30
+    },
+    {
+      "industry_code": "29",
+      "industry_name": "電気機械器具製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9745605920444033,
+      "p_value": 7.171631571042782e-31
+    },
+    {
+      "industry_code": "28",
+      "industry_name": "電子部品・デバイス・電子回路製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9749074930619795,
+      "p_value": 5.284702770287043e-31
+    },
+    {
+      "industry_code": "26",
+      "industry_name": "生産用機械器具製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.977104532839963,
+      "p_value": 6.879768721314369e-32
+    },
+    {
+      "industry_code": "31",
+      "industry_name": "輸送用機械器具製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9794172062904718,
+      "p_value": 6.419472077212948e-33
+    },
+    {
+      "industry_code": "12",
+      "industry_name": "木材・木製品製造業（家具を除く）",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9821924144310823,
+      "p_value": 2.5396935918812008e-34
+    },
+    {
+      "industry_code": "27",
+      "industry_name": "業務用機械器具製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9827705827937095,
+      "p_value": 1.2157984388997716e-34
+    },
+    {
+      "industry_code": "13",
+      "industry_name": "家具・装備品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9843894542090658,
+      "p_value": 1.3426779030567937e-35
+    },
+    {
+      "industry_code": "10",
+      "industry_name": "飲料・たばこ・飼料製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9850832562442183,
+      "p_value": 4.8624347750463124e-36
+    },
+    {
+      "industry_code": "23",
+      "industry_name": "非鉄金属製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.98554579093432,
+      "p_value": 2.4051502532111992e-36
+    },
+    {
+      "industry_code": "16",
+      "industry_name": "化学工業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9867021276595745,
+      "p_value": 3.7288113166049436e-37
+    },
+    {
+      "industry_code": "18",
+      "industry_name": "プラスチック製品製造業（別掲を除く）",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9871646623496763,
+      "p_value": 1.6893361453246562e-37
+    },
+    {
+      "industry_code": "09",
+      "industry_name": "食料品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9890148011100833,
+      "p_value": 5.188549001156297e-39
+    },
+    {
+      "industry_code": "14",
+      "industry_name": "パルプ・紙・紙加工品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9893617021276597,
+      "p_value": 2.5295853037531442e-39
+    },
+    {
+      "industry_code": "21",
+      "industry_name": "窯業・土石製品製造業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9912118408880667,
+      "p_value": 3.502969367692914e-41
+    },
+    {
+      "industry_code": "19",
+      "industry_name": "ゴム製品製造業",
+      "n_prefectures": 45,
+      "spearman_rho": 0.993544137022398,
+      "p_value": 2.7627501809842927e-42
+    },
+    {
+      "industry_code": "22",
+      "industry_name": "鉄鋼業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9936401480111009,
+      "p_value": 2.4841829405227085e-44
+    },
+    {
+      "industry_code": "11",
+      "industry_name": "繊維工業",
+      "n_prefectures": 47,
+      "spearman_rho": 0.9966466234967624,
+      "p_value": 1.4270760074546703e-50
+    }
+  ],
+  "per_industry_summary": {
+    "industries_tested": 24,
+    "median_rho": 0.982481498612396,
+    "min_rho": 0.94599907493062,
+    "max_rho": 0.9966466234967624,
+    "n_above_0.95": 22,
+    "n_below_0.90": 0
+  },
+  "national_employment_change_pct": 2.2708119604147203,
+  "verdict": "LQ ordering is stable across the break. H1 can use the full 8-observation set, with the break still noted."
+}

@@ -1,0 +1,15 @@
+{
+  "statsDataId": "0004003977",
+  "table_no": "EC-va-ind",
+  "reference_year": 2020,
+  "survey_year_label": "令和3年経済センサス活動調査",
+  "downloaded_utc": "2026-09-17T22:43:43.622100+00:00",
+  "endpoint": "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
+  "replaceSpChar": 0,
+  "pages": [
+    "tableEC-va-ind_0004003977_p01.json"
+  ],
+  "total_number_reported": 2384,
+  "rows_downloaded": 2384,
+  "evidence_class": "downloaded"
+}

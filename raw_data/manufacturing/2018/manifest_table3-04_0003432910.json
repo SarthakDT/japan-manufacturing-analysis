@@ -1,0 +1,15 @@
+{
+  "statsDataId": "0003432910",
+  "table_no": "3-04",
+  "reference_year": 2018,
+  "survey_year_label": "2019年確報",
+  "downloaded_utc": "2026-09-17T22:30:31.843058+00:00",
+  "endpoint": "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
+  "replaceSpChar": 0,
+  "pages": [
+    "table3-04_0003432910_p01.json"
+  ],
+  "total_number_reported": 36500,
+  "rows_downloaded": 36500,
+  "evidence_class": "downloaded"
+}

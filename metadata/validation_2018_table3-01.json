@@ -1,0 +1,134 @@
+{
+  "input_cells": 10950,
+  "unmapped_measures": [],
+  "national_area_items": [
+    "全国計",
+    "全国計(2014年)",
+    "全国計(2015年)",
+    "全国計(2016年)",
+    "全国計(2017年)"
+  ],
+  "national_control_row": "全国計 (unmarked)",
+  "excluded_area_items": [
+    "さいたま市",
+    "京都市",
+    "仙台市",
+    "全国計",
+    "全国計(2014年)",
+    "全国計(2015年)",
+    "全国計(2016年)",
+    "全国計(2017年)",
+    "北九州市",
+    "千葉市",
+    "名古屋市",
+    "堺市",
+    "大阪市",
+    "岡山市",
+    "川崎市",
+    "広島市",
+    "新潟市",
+    "札幌市",
+    "東京特別区",
+    "横浜市",
+    "浜松市",
+    "熊本市",
+    "相模原市",
+    "神戸市",
+    "福岡市",
+    "静岡市"
+  ],
+  "excluded_area_count": 26,
+  "duplicate_rows": 0,
+  "missing_required_measures": [],
+  "row_count": 1128,
+  "prefecture_count": 47,
+  "industry_count": 24,
+  "flag_counts": {
+    "establishments": {
+      "ok": 1121,
+      "nil_or_na": 7
+    },
+    "employment": {
+      "ok": 1121,
+      "nil_or_na": 7
+    },
+    "shipments": {
+      "ok": 1092,
+      "suppressed": 29,
+      "nil_or_na": 7
+    },
+    "value_added": {
+      "ok": 1092,
+      "suppressed": 29,
+      "nil_or_na": 7
+    },
+    "cash_wages": {
+      "ok": 1092,
+      "suppressed": 29,
+      "nil_or_na": 7
+    },
+    "raw_materials": {
+      "ok": 1092,
+      "suppressed": 29,
+      "nil_or_na": 7
+    }
+  },
+  "negative_values": {
+    "value_added": [
+      {
+        "prefecture_name": "愛媛",
+        "industry_name": "石油製品・石炭製品製造業",
+        "value_added": -4283.0
+      }
+    ]
+  },
+  "reconciliation": [
+    {
+      "measure": "establishments",
+      "sum_of_47_prefectures": 185116.0,
+      "national_control_row": 185116.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "employment",
+      "sum_of_47_prefectures": 7778124.0,
+      "national_control_row": 7778124.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "shipments",
+      "sum_of_47_prefectures": 331729957.0,
+      "national_control_row": 331809377.0,
+      "absolute_gap": -79420.0,
+      "relative_gap_pct": -0.023935429648813088
+    },
+    {
+      "measure": "value_added",
+      "sum_of_47_prefectures": 104267668.0,
+      "national_control_row": 104300710.0,
+      "absolute_gap": -33042.0,
+      "relative_gap_pct": -0.031679554242727594
+    },
+    {
+      "measure": "cash_wages",
+      "sum_of_47_prefectures": 35423792.0,
+      "national_control_row": 35440757.0,
+      "absolute_gap": -16965.0,
+      "relative_gap_pct": -0.04786861635037875
+    },
+    {
+      "measure": "raw_materials",
+      "sum_of_47_prefectures": 210313154.0,
+      "national_control_row": 210355697.0,
+      "absolute_gap": -42543.0,
+      "relative_gap_pct": -0.02022431557914973
+    }
+  ],
+  "source_pages": [
+    "table3-01_0003432907_p01.json"
+  ],
+  "output": "manufacturing_2018_table3-01.csv",
+  "evidence_class": "transformed-by-pipeline"
+}

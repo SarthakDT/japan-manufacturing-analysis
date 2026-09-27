@@ -1,0 +1,179 @@
+{
+  "input_cells": 16273,
+  "unmapped_measures": [],
+  "national_area_items": [
+    "全国計(2015年)",
+    "全国計(2016年)",
+    "全国計(2017年)",
+    "全国計(2018年)",
+    "全国計(2019年)"
+  ],
+  "national_control_row": "全国計(2019年)",
+  "excluded_area_items": [
+    "さいたま市",
+    "京都市",
+    "仙台市",
+    "全国計(2015年)",
+    "全国計(2016年)",
+    "全国計(2017年)",
+    "全国計(2018年)",
+    "全国計(2019年)",
+    "北九州市",
+    "千葉市",
+    "名古屋市",
+    "堺市",
+    "大阪市",
+    "岡山市",
+    "川崎市",
+    "広島市",
+    "新潟市",
+    "札幌市",
+    "東京特別区",
+    "横浜市",
+    "浜松市",
+    "熊本市",
+    "相模原市",
+    "神戸市",
+    "福岡市",
+    "静岡市"
+  ],
+  "excluded_area_count": 26,
+  "duplicate_rows": 0,
+  "missing_required_measures": [],
+  "row_count": 1128,
+  "prefecture_count": 47,
+  "industry_count": 24,
+  "flag_counts": {
+    "establishments": {
+      "ok": 1081,
+      "absent_from_source": 47
+    },
+    "employment": {
+      "ok": 1081,
+      "absent_from_source": 47
+    },
+    "shipments": {
+      "ok": 976,
+      "suppressed": 105,
+      "absent_from_source": 47
+    },
+    "value_added": {
+      "ok": 976,
+      "suppressed": 105,
+      "absent_from_source": 47
+    },
+    "cash_wages": {
+      "ok": 976,
+      "suppressed": 105,
+      "absent_from_source": 47
+    },
+    "raw_materials": {
+      "ok": 976,
+      "suppressed": 105,
+      "absent_from_source": 47
+    },
+    "production_value": {
+      "ok": 976,
+      "suppressed": 105,
+      "absent_from_source": 47
+    },
+    "establishments_30_99": {
+      "ok": 1071,
+      "absent_from_source": 57
+    },
+    "establishments_100_299": {
+      "ok": 952,
+      "absent_from_source": 176
+    },
+    "establishments_300plus": {
+      "ok": 669,
+      "absent_from_source": 459
+    }
+  },
+  "negative_values": {
+    "value_added": [
+      {
+        "prefecture_name": "和歌山",
+        "industry_name": "石油製品・石炭製品製造業",
+        "value_added": -27634.0
+      }
+    ]
+  },
+  "reconciliation": [
+    {
+      "measure": "establishments",
+      "sum_of_47_prefectures": 45636.0,
+      "national_control_row": 45636.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "employment",
+      "sum_of_47_prefectures": 6061711.0,
+      "national_control_row": 6061711.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "shipments",
+      "sum_of_47_prefectures": 285972393.0,
+      "national_control_row": 290940419.0,
+      "absolute_gap": -4968026.0,
+      "relative_gap_pct": -1.707575048209441
+    },
+    {
+      "measure": "value_added",
+      "sum_of_47_prefectures": 86631414.0,
+      "national_control_row": 87142229.0,
+      "absolute_gap": -510815.0,
+      "relative_gap_pct": -0.5861853728804666
+    },
+    {
+      "measure": "cash_wages",
+      "sum_of_47_prefectures": 29561497.0,
+      "national_control_row": 29754507.0,
+      "absolute_gap": -193010.0,
+      "relative_gap_pct": -0.6486748377313057
+    },
+    {
+      "measure": "raw_materials",
+      "sum_of_47_prefectures": 183533923.0,
+      "national_control_row": 187265777.0,
+      "absolute_gap": -3731854.0,
+      "relative_gap_pct": -1.9928115322427546
+    },
+    {
+      "measure": "production_value",
+      "sum_of_47_prefectures": 263921365.0,
+      "national_control_row": 268809419.0,
+      "absolute_gap": -4888054.0,
+      "relative_gap_pct": -1.8184087515177434
+    },
+    {
+      "measure": "establishments_30_99",
+      "sum_of_47_prefectures": 31366.0,
+      "national_control_row": 31366.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "establishments_100_299",
+      "sum_of_47_prefectures": 10726.0,
+      "national_control_row": 10726.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "establishments_300plus",
+      "sum_of_47_prefectures": 3544.0,
+      "national_control_row": 3544.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    }
+  ],
+  "source_pages": [
+    "table3-03_0003448121_p01.json"
+  ],
+  "output": "manufacturing_2019_table3-03.csv",
+  "evidence_class": "transformed-by-pipeline"
+}

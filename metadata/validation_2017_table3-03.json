@@ -1,0 +1,189 @@
+{
+  "input_cells": 18250,
+  "unmapped_measures": [],
+  "national_area_items": [
+    "全国計",
+    "全国計(2013年)",
+    "全国計(2014年)",
+    "全国計(2015年)",
+    "全国計(2016年)"
+  ],
+  "national_control_row": "全国計 (unmarked)",
+  "excluded_area_items": [
+    "さいたま市",
+    "京都市",
+    "仙台市",
+    "全国計",
+    "全国計(2013年)",
+    "全国計(2014年)",
+    "全国計(2015年)",
+    "全国計(2016年)",
+    "北九州市",
+    "千葉市",
+    "名古屋市",
+    "堺市",
+    "大阪市",
+    "岡山市",
+    "川崎市",
+    "広島市",
+    "新潟市",
+    "札幌市",
+    "東京特別区",
+    "横浜市",
+    "浜松市",
+    "熊本市",
+    "相模原市",
+    "神戸市",
+    "福岡市",
+    "静岡市"
+  ],
+  "excluded_area_count": 26,
+  "duplicate_rows": 0,
+  "missing_required_measures": [],
+  "row_count": 1128,
+  "prefecture_count": 47,
+  "industry_count": 24,
+  "flag_counts": {
+    "establishments": {
+      "ok": 1085,
+      "nil_or_na": 43
+    },
+    "employment": {
+      "ok": 1085,
+      "nil_or_na": 43
+    },
+    "shipments": {
+      "ok": 987,
+      "suppressed": 98,
+      "nil_or_na": 43
+    },
+    "value_added": {
+      "ok": 987,
+      "suppressed": 98,
+      "nil_or_na": 43
+    },
+    "cash_wages": {
+      "ok": 987,
+      "suppressed": 98,
+      "nil_or_na": 43
+    },
+    "raw_materials": {
+      "ok": 987,
+      "suppressed": 98,
+      "nil_or_na": 43
+    },
+    "production_value": {
+      "ok": 987,
+      "suppressed": 98,
+      "nil_or_na": 43
+    },
+    "establishments_30_99": {
+      "ok": 1069,
+      "nil_or_na": 59
+    },
+    "establishments_100_299": {
+      "ok": 951,
+      "nil_or_na": 177
+    },
+    "establishments_300plus": {
+      "ok": 664,
+      "nil_or_na": 464
+    }
+  },
+  "negative_values": {
+    "value_added": [
+      {
+        "prefecture_name": "北海道",
+        "industry_name": "石油製品・石炭製品製造業",
+        "value_added": -6587.0
+      },
+      {
+        "prefecture_name": "和歌山",
+        "industry_name": "石油製品・石炭製品製造業",
+        "value_added": -29759.0
+      },
+      {
+        "prefecture_name": "長崎",
+        "industry_name": "情報通信機械器具製造業",
+        "value_added": -279.0
+      }
+    ]
+  },
+  "reconciliation": [
+    {
+      "measure": "establishments",
+      "sum_of_47_prefectures": 45430.0,
+      "national_control_row": 45430.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "employment",
+      "sum_of_47_prefectures": 5981578.0,
+      "national_control_row": 5981578.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "shipments",
+      "sum_of_47_prefectures": 282627118.0,
+      "national_control_row": 287074969.0,
+      "absolute_gap": -4447851.0,
+      "relative_gap_pct": -1.5493691475413867
+    },
+    {
+      "measure": "value_added",
+      "sum_of_47_prefectures": 89634027.0,
+      "national_control_row": 90229440.0,
+      "absolute_gap": -595413.0,
+      "relative_gap_pct": -0.6598877262232815
+    },
+    {
+      "measure": "cash_wages",
+      "sum_of_47_prefectures": 28483146.0,
+      "national_control_row": 28658521.0,
+      "absolute_gap": -175375.0,
+      "relative_gap_pct": -0.6119471413057219
+    },
+    {
+      "measure": "raw_materials",
+      "sum_of_47_prefectures": 178204800.0,
+      "national_control_row": 181364205.0,
+      "absolute_gap": -3159405.0,
+      "relative_gap_pct": -1.7420223577193745
+    },
+    {
+      "measure": "production_value",
+      "sum_of_47_prefectures": 261664940.0,
+      "national_control_row": 266087031.0,
+      "absolute_gap": -4422091.0,
+      "relative_gap_pct": -1.661896479276361
+    },
+    {
+      "measure": "establishments_30_99",
+      "sum_of_47_prefectures": 31395.0,
+      "national_control_row": 31395.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "establishments_100_299",
+      "sum_of_47_prefectures": 10539.0,
+      "national_control_row": 10539.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "establishments_300plus",
+      "sum_of_47_prefectures": 3496.0,
+      "national_control_row": 3496.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    }
+  ],
+  "source_pages": [
+    "table3-03_0003389994_p01.json"
+  ],
+  "output": "manufacturing_2017_table3-03.csv",
+  "evidence_class": "transformed-by-pipeline"
+}

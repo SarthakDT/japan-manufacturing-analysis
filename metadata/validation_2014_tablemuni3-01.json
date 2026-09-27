@@ -1,0 +1,131 @@
+{
+  "input_cells": 18250,
+  "time_dimension": {
+    "dimension": "time",
+    "available": [
+      "2010年",
+      "2011年",
+      "2012年",
+      "2013年",
+      "2014年"
+    ],
+    "selected": "2014",
+    "rows_before": 18250,
+    "rows_after": 17250
+  },
+  "unmapped_measures": [],
+  "national_area_items": [
+    "全国"
+  ],
+  "national_control_row": null,
+  "excluded_area_items": [
+    "さいたま市",
+    "京都市",
+    "仙台市",
+    "全国",
+    "北九州市",
+    "千葉市",
+    "名古屋市",
+    "堺市",
+    "大阪市",
+    "岡山市",
+    "川崎市",
+    "広島市",
+    "新潟市",
+    "札幌市",
+    "横浜市",
+    "浜松市",
+    "熊本市",
+    "特別区部",
+    "相模原市",
+    "神戸市",
+    "福岡市",
+    "静岡市"
+  ],
+  "excluded_area_count": 22,
+  "duplicate_rows": 0,
+  "missing_required_measures": [
+    "value_added"
+  ],
+  "row_count": 1128,
+  "prefecture_count": 47,
+  "industry_count": 24,
+  "flag_counts": {
+    "establishments": {
+      "ok": 1121,
+      "nil_or_na": 7
+    },
+    "employment": {
+      "ok": 1121,
+      "nil_or_na": 7
+    },
+    "shipments": {
+      "ok": 1093,
+      "suppressed": 28,
+      "nil_or_na": 7
+    },
+    "cash_wages": {
+      "ok": 1093,
+      "suppressed": 28,
+      "nil_or_na": 7
+    },
+    "raw_materials": {
+      "ok": 1093,
+      "suppressed": 28,
+      "nil_or_na": 7
+    },
+    "gross_value_added": {
+      "ok": 1093,
+      "suppressed": 28,
+      "nil_or_na": 7
+    },
+    "other_income": {
+      "ok": 1069,
+      "nil_or_na": 47,
+      "suppressed": 12
+    },
+    "tangible_fixed_assets_30plus": {
+      "ok": 980,
+      "suppressed": 102,
+      "nil_or_na": 46
+    },
+    "establishments_30_299": {
+      "ok": 1083,
+      "nil_or_na": 45
+    },
+    "establishments_300plus": {
+      "ok": 644,
+      "nil_or_na": 484
+    }
+  },
+  "negative_values": {
+    "gross_value_added": [
+      {
+        "prefecture_name": "北海道",
+        "industry_name": "石油製品・石炭製品製造業",
+        "gross_value_added": -5891769.0
+      },
+      {
+        "prefecture_name": "岡山",
+        "industry_name": "石油製品・石炭製品製造業",
+        "gross_value_added": -291092.0
+      },
+      {
+        "prefecture_name": "愛媛",
+        "industry_name": "石油製品・石炭製品製造業",
+        "gross_value_added": -4578559.0
+      },
+      {
+        "prefecture_name": "沖縄",
+        "industry_name": "石油製品・石炭製品製造業",
+        "gross_value_added": -2197802.0
+      }
+    ]
+  },
+  "reconciliation": [],
+  "source_pages": [
+    "tablemuni3-01_0003144102_p01.json"
+  ],
+  "output": "manufacturing_2014_tablemuni3-01.csv",
+  "evidence_class": "transformed-by-pipeline"
+}

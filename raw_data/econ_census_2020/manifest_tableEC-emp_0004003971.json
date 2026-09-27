@@ -1,0 +1,15 @@
+{
+  "statsDataId": "0004003971",
+  "table_no": "EC-emp",
+  "reference_year": 2020,
+  "survey_year_label": "令和3年経済センサス活動調査",
+  "downloaded_utc": "2026-09-17T22:43:40.508019+00:00",
+  "endpoint": "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
+  "replaceSpChar": 0,
+  "pages": [
+    "tableEC-emp_0004003971_p01.json"
+  ],
+  "total_number_reported": 288,
+  "rows_downloaded": 288,
+  "evidence_class": "downloaded"
+}

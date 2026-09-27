@@ -1,0 +1,14 @@
+# Analysis and pipeline
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+
+# Notebook execution (only needed to re-run notebooks/)
+nbformat>=5.10
+nbconvert>=7.16
+ipykernel>=6.29
+
+# Data acquisition uses the standard library only (urllib), so no HTTP client
+# is listed. Fetching from e-Stat additionally requires an ESTAT_APP_ID
+# environment variable — see README.md.

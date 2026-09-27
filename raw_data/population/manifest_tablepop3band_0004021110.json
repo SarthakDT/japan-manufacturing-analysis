@@ -1,0 +1,15 @@
+{
+  "statsDataId": "0004021110",
+  "table_no": "pop3band",
+  "reference_year": 2016,
+  "survey_year_label": "補間補正人口 2015年～",
+  "downloaded_utc": "2026-09-14T18:08:31.837460+00:00",
+  "endpoint": "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
+  "replaceSpChar": 0,
+  "pages": [
+    "tablepop3band_0004021110_p01.json"
+  ],
+  "total_number_reported": 8640,
+  "rows_downloaded": 8640,
+  "evidence_class": "downloaded"
+}

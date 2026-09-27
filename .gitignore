@@ -1,0 +1,35 @@
+# --- Raw API responses -------------------------------------------------------
+# The bulky per-page JSON is excluded: ~19 MB, and fully regenerable with
+#   python src/fetch_estat.py data --statsdataid <id> --reference-year <year> ...
+# Download MANIFESTS are deliberately kept. They carry the provenance that makes
+# the pipeline auditable: statsDataId, survey-year label, reference year,
+# download timestamp, and the replaceSpChar setting.
+raw_data/**/*_p[0-9][0-9].json
+!raw_data/**/manifest_*.json
+
+# Raw discovery dumps (~1.5 MB). The derived, readable index CSVs are committed
+# instead; regenerate with `python src/fetch_estat.py discover`.
+metadata/estat_statslist_raw*.json
+
+# --- Source materials, not project output ------------------------------------
+# Working documents and third-party copyrighted material.
+*.docx
+*.pdf
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# --- OS ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Local tooling -----------------------------------------------------------
+# Editor/assistant permission settings. Not project content, and they embed
+# absolute paths from the local machine.
+.claude/

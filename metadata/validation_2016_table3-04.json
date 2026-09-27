@@ -1,0 +1,146 @@
+{
+  "input_cells": 36500,
+  "unmapped_measures": [
+    "在庫額［半製品及び仕掛品］【年初在庫額】（百万円）",
+    "在庫額［半製品及び仕掛品］【年末在庫額】（百万円）",
+    "在庫額［原材料及び燃料］【年初在庫額】（百万円）",
+    "在庫額［原材料及び燃料］【年末在庫額】（百万円）",
+    "在庫額［製造品］【年初在庫額】（百万円）",
+    "在庫額［製造品］【年末在庫額】（百万円）",
+    "有形固定資産額［取得額］【土地】（百万円）",
+    "有形固定資産額［取得額］【土地以外のもの】｛その他｝（百万円）",
+    "有形固定資産額［取得額］【土地以外のもの】｛建物及び構築物｝（百万円）",
+    "有形固定資産額［取得額］【土地以外のもの】｛機械及び装置｝（百万円）",
+    "有形固定資産額［建設仮勘定］【増加額】（百万円）",
+    "有形固定資産額［建設仮勘定］【減少額】（百万円）",
+    "有形固定資産額［除却・売却による減少額］【土地】（百万円）",
+    "有形固定資産額［除却・売却による減少額］【土地以外のもの】（百万円）"
+  ],
+  "national_area_items": [
+    "全国計",
+    "全国計(2012年)",
+    "全国計(2013年)",
+    "全国計(2014年)",
+    "全国計(2015年)"
+  ],
+  "national_control_row": "全国計 (unmarked)",
+  "excluded_area_items": [
+    "さいたま市",
+    "京都市",
+    "仙台市",
+    "全国計",
+    "全国計(2012年)",
+    "全国計(2013年)",
+    "全国計(2014年)",
+    "全国計(2015年)",
+    "北九州市",
+    "千葉市",
+    "名古屋市",
+    "堺市",
+    "大阪市",
+    "岡山市",
+    "川崎市",
+    "広島市",
+    "新潟市",
+    "札幌市",
+    "東京特別区",
+    "横浜市",
+    "浜松市",
+    "熊本市",
+    "相模原市",
+    "神戸市",
+    "福岡市",
+    "静岡市"
+  ],
+  "excluded_area_count": 26,
+  "duplicate_rows": 0,
+  "missing_required_measures": [
+    "employment",
+    "shipments",
+    "value_added"
+  ],
+  "row_count": 1128,
+  "prefecture_count": 47,
+  "industry_count": 24,
+  "flag_counts": {
+    "establishments": {
+      "ok": 1084,
+      "nil_or_na": 44
+    },
+    "capital_stock_year_end": {
+      "ok": 979,
+      "suppressed": 104,
+      "nil_or_na": 45
+    },
+    "capital_investment": {
+      "ok": 979,
+      "suppressed": 100,
+      "nil_or_na": 49
+    },
+    "capital_depreciation": {
+      "ok": 979,
+      "suppressed": 104,
+      "nil_or_na": 45
+    },
+    "capital_open_land": {
+      "ok": 982,
+      "suppressed": 93,
+      "nil_or_na": 53
+    },
+    "capital_open_nonland": {
+      "ok": 979,
+      "suppressed": 104,
+      "nil_or_na": 45
+    }
+  },
+  "negative_values": {},
+  "reconciliation": [
+    {
+      "measure": "establishments",
+      "sum_of_47_prefectures": 44595.0,
+      "national_control_row": 44595.0,
+      "absolute_gap": 0.0,
+      "relative_gap_pct": 0.0
+    },
+    {
+      "measure": "capital_stock_year_end",
+      "sum_of_47_prefectures": 69655271.0,
+      "national_control_row": 70413368.0,
+      "absolute_gap": -758097.0,
+      "relative_gap_pct": -1.076637890691438
+    },
+    {
+      "measure": "capital_investment",
+      "sum_of_47_prefectures": 11961854.0,
+      "national_control_row": 12058981.0,
+      "absolute_gap": -97127.0,
+      "relative_gap_pct": -0.8054328968591956
+    },
+    {
+      "measure": "capital_depreciation",
+      "sum_of_47_prefectures": 8442642.0,
+      "national_control_row": 8514444.0,
+      "absolute_gap": -71802.0,
+      "relative_gap_pct": -0.8432964031474045
+    },
+    {
+      "measure": "capital_open_land",
+      "sum_of_47_prefectures": 18951092.0,
+      "national_control_row": 19228118.0,
+      "absolute_gap": -277026.0,
+      "relative_gap_pct": -1.440733825328095
+    },
+    {
+      "measure": "capital_open_nonland",
+      "sum_of_47_prefectures": 49292013.0,
+      "national_control_row": 49764451.0,
+      "absolute_gap": -472438.0,
+      "relative_gap_pct": -0.9493483611423745
+    }
+  ],
+  "source_pages": [
+    "table3-04_0003325924_p01.json"
+  ],
+  "output": "manufacturing_2016_table3-04.csv",
+  "evidence_class": "transformed-by-pipeline"
+}
