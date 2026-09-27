@@ -19,3 +19,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+NOTE ON DATA
+
+This licence covers the source code and documentation in this repository.
+
+The underlying statistics are published by the Ministry of Economy, Trade and
+Industry and the Statistics Bureau of Japan, and were retrieved through the
+e-Stat API (政府統計の総合窓口). Their content is not guaranteed by the Japanese
+government, and their own terms of use apply to the data itself:
+
+    この分析は、政府統計総合窓口(e-Stat)のAPI機能を使用していますが、
+    サービスの内容は国によって保証されたものではありません。
+
+Derived files under processed_data/ are transformations of that source data and
+should carry the same attribution when redistributed.

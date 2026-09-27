@@ -10,7 +10,7 @@ Design rules for this project:
     every location quotient built on thin prefecture x industry cells.
   * Directories are named by REFERENCE YEAR, not survey year. e-Stat labels its
     datasets by survey year, and from the 2017 survey onward the financial items
-    refer to the PREVIOUS calendar year. See metadata/reference_year_mapping.md.
+    refer to the PREVIOUS calendar year. See docs/reference-years.md.
     Every download writes a manifest.json recording both years.
 
 Usage:

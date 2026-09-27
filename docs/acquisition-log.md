@@ -55,7 +55,7 @@ Two corrections to the brief arise from this:
    (production value), which 3-01 does not. The brief's §2.8 schema describes
    3-01 only. `MEASURE_MAP` in `validate_manufacturing.py` handles both.
 2. **Both tables carry reference year 2018, not 2019.** See
-   [reference_year_mapping.md](reference_year_mapping.md).
+   [reference-years.md](reference-years.md).
 
 Table 3-01's measure list and area items were read off e-Stat and match the
 brief's §2.8 exactly: six measures, and national rows
@@ -111,7 +111,7 @@ e-Stat's `SURVEY_DATE` field reports `201901-201912` for the ２０１９年確�
 which contradicts METI. The conflict was settled numerically, not by argument:
 the 2019 survey's unmarked `全国計` equals the 2020 survey's explicit
 `全国計(2018年)` exactly (331,809,377 百万円), and the 2017 figure agrees across
-both tables. Details in [reference_year_mapping.md](reference_year_mapping.md).
+both tables. Details in [reference-years.md](reference-years.md).
 
 **`SURVEY_DATE` is unreliable for every survey from 2017 onward.** The brief's
 §2.2 mapping is correct; the brief's §2.7/Step 2 instruction to emit
@@ -307,7 +307,7 @@ year published in a different unit fails loudly instead of silently rescaling.
 > significance; **none survived Bonferroni or Benjamini-Hochberg**. The hypotheses
 > they refer to have been retired and the analysis removed. The table is kept as a
 > record of what was run, **not as a finding**. See Part 20 of
-> [work_log.md](work_log.md).
+> [work-log.md](work-log.md).
 
 Bivariate correlations against `va_per_worker`, 2019, n=47. **Not the analysis** —
 run only to check the panel is not inert:
@@ -348,7 +348,7 @@ National value added per worker CAGR 2016–2019: **+0.34%**.
 | Reference year 2020 (2021 Economic Census) | **done**, Session 06, gate passed at 0 difference |
 | Labour Force Survey | **dropped** — model estimates with large prefecture-level sampling error; working-age population used as the denominator instead |
 | Economic Census 2011 and 2015 | **not downloaded** — obtainable (`0003389789`, `0003389393`) |
-| ESS 2021 onward | **impossible** — no area dimension; see [year_availability_matrix.md](year_availability_matrix.md) |
+| ESS 2021 onward | **impossible** — no area dimension; see [data-availability.md](data-availability.md) |
 
 **Acquisition is complete for the analysis window.** The panel covers reference years
 2016–2020 and ends there permanently. Nothing further is blocked on data collection.

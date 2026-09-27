@@ -2,7 +2,7 @@
 
 Source: 工業統計調査 `２０１９年確報` (survey conducted 1 June 2019).
 Financial items refer to **January–December 2018**; counts to **1 June 2019**.
-See [reference_year_mapping.md](reference_year_mapping.md).
+See [reference-years.md](reference-years.md).
 
 **Data status: not yet downloaded.** This file records source definitions
 verified from e-Stat and METI, and since updated with observed counts from the

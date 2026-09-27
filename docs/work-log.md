@@ -12,7 +12,7 @@ hypothesis-testing work removed after a robustness review
 | 02 | Scope reset, then the analysis panel | `panel_prefecture_year.csv`, 188 rows |
 | 03 | First analytical deliverable | EDA notebook, 4 charts, findings v1 |
 | 04 | Geography vs industry composition | shift-share module, notebook 02, findings v2 |
-| 05 | Conceptual reference | `docs/CONCEPTS.md`, ~50 concepts |
+| 05 | Conceptual reference | `docs/concepts.md`, ~50 concepts |
 | 06 | Capital, convergence, reference year 2020 | panel to 235 rows; ESS shown impossible |
 | 07 | Robustness review and removal | hypothesis-testing work deleted; see Part 20 |
 
@@ -44,7 +44,7 @@ Listed the working directory. Found four pre-existing files, none of them code:
 
 | File | Size |
 |---|---|
-| `02_Measurement_Framework.md` | 10,490 B |
+| `docs/measurement-framework.md` | 10,490 B |
 | `Japan_Manufacturing_Stage1.1_Report.docx` | 35,198 B |
 | `OECD Report on Value Added vs Gross.pdf` | 1,007,694 B |
 | `research notes.docx` | 0 B (empty) |
@@ -112,7 +112,7 @@ src/
 
 ### 0.5 Read the existing measurement framework
 
-Read `02_Measurement_Framework.md` in full to align with prior Stage 1.1
+Read `docs/measurement-framework.md` in full to align with prior Stage 1.1
 decisions: dependent variable, the seven independent variables, the three
 hypotheses, and the honest caveat that gross-output measures are theoretically
 cleaner at firm level. Carried this into the README rather than restating it
@@ -260,10 +260,10 @@ directories.
 
 | File | Content |
 |---|---|
-| `metadata/reference_year_mapping.md` | the correction, with METI quotes |
-| `metadata/acquisition_log.md` | network diagnosis, table identity, evidence classes |
-| `metadata/year_availability_matrix.md` | per-year status, mostly "unverified" |
-| `metadata/manufacturing_2018_metadata.md` | definitions, the two VA formulas, filtering rules |
+| `docs/reference-years.md` | the correction, with METI quotes |
+| `docs/acquisition-log.md` | network diagnosis, table identity, evidence classes |
+| `docs/data-availability.md` | per-year status, mostly "unverified" |
+| `docs/variable-definitions.md` | definitions, the two VA formulas, filtering rules |
 | `README.md` | status, limitations, layout, e-Stat attribution |
 
 ### 2.6 Bug fixed before it could bite
@@ -595,7 +595,7 @@ poisons everything downstream" the brief's Rule 1 warns about.
 3. **Deleted** the duplicate raw copies in `raw_data/manufacturing/{2010,2012,2013}/`
    that implied data which does not exist.
 4. **Corrected** the availability matrix with the per-year cell-count table.
-5. **Logged** the correction explicitly in `acquisition_log.md` rather than
+5. **Logged** the correction explicitly in `docs/acquisition-log.md` rather than
    quietly fixing it.
 
 **The LQ break test is unaffected** — it uses 2014 and 2016, both of which have
@@ -647,11 +647,11 @@ genuine prefecture detail.
 | File | Purpose |
 |---|---|
 | `README.md` | status, getting started, measurement, limitations, attribution |
-| `metadata/reference_year_mapping.md` | the year correction with three independent proofs |
-| `metadata/acquisition_log.md` | chronological log with evidence classes |
-| `metadata/year_availability_matrix.md` | per-reference-year status and table IDs |
-| `metadata/manufacturing_2018_metadata.md` | definitions, VA formulas, filtering, conventions |
-| `metadata/work_log.md` | this file |
+| `docs/reference-years.md` | the year correction with three independent proofs |
+| `docs/acquisition-log.md` | chronological log with evidence classes |
+| `docs/data-availability.md` | per-reference-year status and table IDs |
+| `docs/variable-definitions.md` | definitions, VA formulas, filtering, conventions |
+| `docs/work-log.md` | this file |
 
 ### Created — data
 
@@ -993,8 +993,8 @@ tested at all.
 |---|---|
 | `src/fetch_estat.py` | `--stats-code`, `--search-word`, `--dest-dir` |
 | `README.md` | status rewritten around the panel; population sourcing documented |
-| `metadata/acquisition_log.md` | Session 02 section, unit bug, signal preview |
-| `metadata/work_log.md` | this file |
+| `docs/acquisition-log.md` | Session 02 section, unit bug, signal preview |
+| `docs/work-log.md` | this file |
 
 ### Panel schema (22 columns)
 
@@ -1269,7 +1269,7 @@ and only industry fixed effects separate them.
 
 ---
 
-## Part 18 — `docs/CONCEPTS.md`
+## Part 18 — `docs/concepts.md`
 
 Documentation only. No analysis re-run, no finding changed.
 
@@ -1297,12 +1297,12 @@ nominal.
   growth" without qualification overstates what was measured.
 
 Four sessions had not raised this. It qualifies one finding rather than
-invalidating any, and now appears in `docs/CONCEPTS.md` §1.5 and in the open
+invalidating any, and now appears in `docs/concepts.md` §1.5 and in the open
 questions. Fixing it properly needs an industry-level output deflator.
 
 ### 18.3 Two stale documents corrected
 
-`metadata/manufacturing_2018_metadata.md` still carried pre-Session-02 facts:
+`docs/variable-definitions.md` still carried pre-Session-02 facts:
 
 1. It listed **3-03 as primary** and 3-01 as the robustness check. Session 02
    reversed this on suppression grounds (3-03 loses ~9% of value-added cells
@@ -1328,8 +1328,8 @@ repository.
 
 | Path | Action |
 |---|---|
-| `docs/CONCEPTS.md` | created |
-| `metadata/manufacturing_2018_metadata.md` | primary/robustness roles and measure count corrected |
+| `docs/concepts.md` | created |
+| `docs/variable-definitions.md` | primary/robustness roles and measure count corrected |
 | `README_draft.md` | linked to the concepts document |
 
 ---
@@ -1435,7 +1435,7 @@ Chart 6 reading were softened accordingly.
 
 | Path | Action |
 |---|---|
-| `docs/CONCEPTS.md` | §1.2, §2.2, §2.5, §2.7, §2.8, §3.10, §4.1 rewritten |
+| `docs/concepts.md` | §1.2, §2.2, §2.5, §2.7, §2.8, §3.10, §4.1 rewritten |
 | `src/shift_share.py` | unchanged; three-way run as a sensitivity check |
 | `src/econ_census.py` | new — 2020 loader and comparability gate |
 | `src/build_panel.py` | `instrument` column, 2020 append, generalised totals loader |
@@ -1443,7 +1443,7 @@ Chart 6 reading were softened accordingly.
 | `notebooks/03_capital_and_convergence.ipynb` | new, 17 cells, 0 errors |
 | `outputs/charts/chart8_capital_deepening.png` | new |
 | `outputs/findings_v3.md` | new |
-| `metadata/year_availability_matrix.md` | 2020, capital, 2021+ impossibility |
+| `docs/data-availability.md` | 2020, capital, 2021+ impossibility |
 
 ---
 
@@ -1493,7 +1493,7 @@ three-way decomposition had already shown overstates the case. Corrected to a fi
 mix, half within, a third interaction, with Yamaguchi's interaction-dominated split
 shown alongside.
 
-**`02_Measurement_Framework.md`** — §3 rewritten to list only variables actually
+**`docs/measurement-framework.md`** — §3 rewritten to list only variables actually
 built, recording that robot density and port infrastructure were dropped as
 unobtainable and that the Labour Force Survey denominator was replaced. §4 replaced
 with a retirement note explaining why each hypothesis failed and that power, not any
@@ -1503,7 +1503,7 @@ single hypothesis, was the underlying problem.
 and decompositions that do not depend on a significance threshold, plus an explicit
 note on statistical power.
 
-**`docs/CONCEPTS.md`** — six dangling references repaired, §2.7 and §2.8 rewritten to
+**`docs/concepts.md`** — six dangling references repaired, §2.7 and §2.8 rewritten to
 record the tests as withdrawn while keeping the concepts and noting the capital data
 survives intact, and a banner added so remaining H1/H2/H3 mentions read as history.
 

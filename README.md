@@ -1,119 +1,170 @@
 # Japanese Manufacturing Productivity
 
-Why are some Japanese prefectures more manufacturing-productive than others?
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Data: e-Stat](https://img.shields.io/badge/data-e--Stat%20API-brightgreen.svg)](https://www.e-stat.go.jp/en)
+
+**Why are some Japanese prefectures more manufacturing-productive than others?**
+
+A prefecture-level analysis of manufacturing value added per worker across all 47
+prefectures and 24 industry divisions, 2016–2020, built from Japan's Census of
+Manufacture via the e-Stat API.
 
 ---
 
-## 1. Problem Statement
+## Headline result
 
-Japan's manufacturing output is highly concentrated by region, but output share and
-productivity are not the same thing. This project measures manufacturing value added per
-worker across all 47 prefectures and 24 industry divisions for 2016–2019, and asks
-whether the differences between regions reflect where production happens or simply what
-each region happens to make.
+Japan's largest manufacturing region is not its most productive. Aichi produces
+**12.8%** of national manufacturing value added and ranks **7th of 47** on value added
+per worker. Tokyo ranks 27th, Osaka 22nd.
 
-The dependent variable is value added per worker, following the OECD *Measuring
-Productivity* manual and SNA 2008 §19.47. Value added is preferred to gross output
-because it is far less sensitive to vertical integration and outsourcing intensity,
-which matters when comparing a vertically integrated automotive cluster against an
-import-heavy electronics one.
+![Top 15 prefectures by value added per worker](outputs/charts/chart1_top15_productivity.png)
 
-Every statistical, economic and manufacturing concept used here is defined from
-first principles, with worked examples and pointers to where it was applied, in
-[docs/CONCEPTS.md](docs/CONCEPTS.md).
+The leaders are mid-sized prefectures running capital-intensive process industries.
+That turns out to be the key to the whole analysis: **what a region makes matters as
+much as how well it makes it**, and separating the two is the central methodological
+problem.
 
-## 2. Data Sources
+## Findings
 
-**METI Census of Manufacture** (工業統計調査) via the e-Stat API — establishments,
-persons engaged, shipments and value added by prefecture × industry.
+These are **magnitudes and decompositions, not significance tests**. With 47
+prefectures there is not enough statistical power for hypothesis testing to separate
+signal from noise, so the project reports quantities that do not depend on a p-value.
+See [Statistical power](#statistical-power) below.
 
-Indexed by **reference year, not survey year.** e-Stat labels these datasets by survey
-year, but from the 2017 survey onward the financial items refer to the *previous*
-calendar year, so the dataset titled `2019年確報` contains 2018 value added. This was
-verified numerically rather than assumed, and e-Stat's own `SURVEY_DATE` metadata field
-is wrong for every survey from 2017 onward.
+| # | Finding |
+|---|---|
+| 1 | Aichi produces 12.8% of national value added but ranks 7th of 47 on productivity |
+| 2 | Productivity differs **5.90×** between industries, from petroleum and coal (34.8 million yen per worker) to leather (5.9) |
+| 3 | Large regional differences **survive holding industry fixed** — median within-industry spread of **6.62×**, wider than the between-industry spread |
+| 4 | Productive prefectures **beat their peers** rather than just holding better industries: within-industry performance outweighs industry mix in 37 of 47 prefectures, stable across all four years |
+| 5 | Industry identity explains **51.6%** of cell-level variance against **15.0%** for prefecture identity, while the aggregate decomposition points the other way — both hold, because prefectures are too diversified for industry differences to reach their totals |
+| 6 | Nominal productivity was **flat**: +0.34% a year, 2016–2019, and unchanged in 2020 |
+
+## Repository structure
+
+```
+├── src/                        Pipeline modules, each runnable and self-tested
+│   ├── fetch_estat.py            e-Stat API client, writes provenance manifests
+│   ├── validate_manufacturing.py cleaning, suppression flags, 47×24 grid validation
+│   ├── build_panel.py            prefecture × year analysis panel
+│   ├── shift_share.py            mix/within decomposition with asserted identity
+│   ├── econ_census.py            reference year 2020 + comparability gate
+│   ├── lq_break_test.py          rank-correlation test for the 2016 definition break
+│   └── viz_style.py              validated palette, romaji and industry label maps
+├── notebooks/                  Executed, outputs embedded — render directly on GitHub
+│   ├── 01_exploratory_analysis.ipynb
+│   └── 02_industry_mix_analysis.ipynb
+├── processed_data/             Validated CSVs — notebooks run without an API key
+├── raw_data/                   Download manifests (bulk JSON is gitignored)
+├── metadata/                   Validation reports and table indexes
+├── outputs/charts/             Generated figures
+└── docs/                       See docs/README.md for the index
+```
+
+## Quick start
+
+```bash
+git clone https://github.com/SarthakDT/japan-manufacturing-analysis.git
+cd japan-manufacturing-analysis
+pip install -r requirements.txt
+```
+
+The processed panel is committed, so the analysis runs with no API key:
+
+```bash
+python src/build_panel.py            # rebuild the panel, 235 rows, 13 validation checks
+python src/shift_share.py --self-test # verify the decomposition identity
+python src/lq_break_test.py           # structural-break test
+```
+
+To re-acquire the raw data you need a free [e-Stat API key](https://www.e-stat.go.jp/mypage/user/preregister):
+
+```bash
+export ESTAT_APP_ID=<your key>
+python src/fetch_estat.py discover
+python src/fetch_estat.py meta --statsdataid 0003432907
+python src/fetch_estat.py data --statsdataid 0003432907 --reference-year 2018 --table 3-01
+```
+
+Always run `meta` before `data` on an unfamiliar table. Which dimension holds
+measures, industry and geography varies per table, and the measure dimension's name
+contains 産業, which trivially fools a naive match.
+
+## Data sources
+
+**[METI Census of Manufacture](https://www.meti.go.jp/statistics/tyo/kougyo/)**
+(工業統計調査) via the e-Stat API — establishments, persons engaged, shipments, value
+added and capital stock by prefecture × industry.
 
 **Statistics Bureau intercensal adjusted population** (国勢調査結果による補間補正人口) —
-prefecture population by three age bands, chosen over the forward-projected estimates
-because 2016–2019 sits between the 2015 and 2020 censuses and is reconciled against both.
+population by three age bands, chosen over forward-projected estimates because
+2016–2020 is reconciled against both the 2015 and 2020 censuses.
 
 **2021 Economic Census** (令和3年経済センサス‐活動調査) supplies reference year 2020.
-It reproduces the Census of Manufacture basis exactly — zero difference across all 47
-prefectures on 2019, verified before appending.
 
-The panel **ends at reference year 2020**, and that is a data limit rather than a
-scope decision: the successor Economic Structure Survey publishes manufacturing with
-no area dimension, so value added by prefecture does not exist for 2021 onward.
+The panel **ends at reference year 2020 permanently**. The successor Economic
+Structure Survey publishes manufacturing with no area dimension, so value added by
+prefecture does not exist for 2021 onward. That is a data limit, not a scope choice.
 
-Confidentiality-suppressed cells are held as missing and never zero-filled: suppression
-targets thin prefecture × industry cells, so zero-filling would distort exactly the
-small-industry cells a location quotient depends on.
+## Data quality
 
-## 3. Key Findings
+Three source characteristics shaped the pipeline, and each is documented with its
+verification.
 
-These are **magnitudes and decompositions**, not significance tests. With 47
-prefectures and a five-year window there is not enough power for hypothesis testing to
-distinguish signal from noise, so the project reports quantities that do not depend on
-a p-value. See the note on statistical power below.
+**Year labels in the source are misleading.** e-Stat labels datasets by *survey* year,
+but from the 2017 survey the financial items refer to the *previous* calendar year, so
+`2019年確報` contains 2018 value added. Verified numerically: the 2019 survey's national
+row equals the 2020 survey's row labelled 2018, to the yen. e-Stat's own `SURVEY_DATE`
+field is wrong for every survey since 2017. → [docs/reference-years.md](docs/reference-years.md)
 
-1. **Japan's largest manufacturing region is not its most productive.** Aichi produces
-   12.8% of national manufacturing value added and ranks 7th of 47 on value added per
-   worker. Tokyo ranks 27th, Osaka 22nd.
+**Suppressed cells are not zeros.** Confidentiality suppression is
+missing-not-at-random, targeting thin prefecture × industry cells. They are held as
+`NaN` with explicit flags. → [docs/concepts.md](docs/concepts.md) §3.14
 
-2. **Productivity differs 5.90× between manufacturing industries**, from petroleum and
-   coal at 34.8 million yen per worker to leather at 5.9, against a national average
-   of 13.0.
+**Prefecture totals come from the published total row**, not from summing industries,
+because summing drops suppressed cells and the loss concentrates in small prefectures
+(Kochi 1.54%, Aichi 0.00%).
 
-3. **Large regional differences survive once industry is held fixed.** Within a single
-   industry the best prefecture out-produces the worst by a median of **6.62×**, and 14
-   of 24 industries individually exceed the entire between-industry spread.
+Validation reconciles prefecture sums against published national totals at **0.0000%**
+on counts, with monetary gaps tracking the suppressed-cell count exactly.
 
-4. **Productive prefectures beat their peers rather than simply holding better
-   industries.** An exact shift-share decomposition attributes more of the gap to
-   within-industry performance than to industry mix in 37 of 47 prefectures, stable in
-   every year from 2016 to 2019.
+## Statistical power
 
-5. **Industry identity explains more at cell level than prefecture identity does**
-   (51.6% against 15.0% of variance in log productivity), while the aggregate
-   decomposition points the other way. Both hold: prefectures are too diversified
-   (Herfindahl 0.06 to 0.25) for between-industry differences to reach their totals.
+An earlier phase of this project tested three hypotheses about specialization, aging
+and diversity across **15 correlation and regression tests** at n = 47. Seven reached
+nominal significance at 0.05; **none survived correction for multiple comparisons**
+under either Bonferroni or Benjamini-Hochberg.
 
-6. **Nominal productivity was flat**, growing 0.34% a year from 2016 to 2019 and
-   essentially unchanged in 2020. Nothing has been deflated, so real growth may be lower.
+Those findings were **withdrawn and their analysis deleted** rather than published with
+caveats. The project now reports magnitudes. New hypotheses are being designed around
+the prefecture × industry panel, which raises the sample from 47 to 1,128 observations
+per year.
 
-### A note on statistical power
+→ [docs/concepts.md](docs/concepts.md) §3.5a · [docs/measurement-framework.md](docs/measurement-framework.md) §4
 
-An earlier version of this project tested three hypotheses about specialization, aging
-and diversity across 15 correlation and regression tests. Seven reached nominal
-significance at 0.05; **none survived correction for multiple comparisons** under either
-Bonferroni or Benjamini-Hochberg. Those findings have been withdrawn rather than
-reported with caveats, and new hypotheses are being designed against what n = 47
-actually supports. See `02_Measurement_Framework.md` §4.
+## Limitations
 
-## 4. Next Steps
+- **Value added is nominal**, never deflated, so the growth figure is nominal growth.
+- **Productivity is per worker, not per hour**; hours are unpublished at this granularity.
+- **Capital data covers only 30+ employee establishments**, while the main panel is 4+.
+- **Everything is correlational.** No causal identification is claimed anywhere.
+- The primary value-added column **blends net and gross** by establishment size.
 
-**New hypotheses, designed around the power constraint.** The descriptive work points to
-one well-posed question: given that substantial within-industry variation exists across
-prefectures (Finding 3), what explains it? Any hypothesis must hold industry constant,
-because prefecture-level measures confound how specialized a region is with what it is
-specialized in.
+## Documentation
 
-The natural specification uses the prefecture × industry panel rather than prefecture
-aggregates, which raises the sample from 47 to 1,128 observations per year:
+Full index at **[docs/README.md](docs/README.md)**. Most useful entry points:
 
-```
-log(value added per worker)_pi  =  β · X_pi  +  industry FE  +  ε_pi
-```
+- [docs/concepts.md](docs/concepts.md) — every concept used, from first principles, ~50 entries
+- [docs/reference-years.md](docs/reference-years.md) — the year-label problem and its proof
+- [docs/work-log.md](docs/work-log.md) — chronological development record, including the mistakes
 
-with standard errors clustered by prefecture, and table 3-03 (30+ employees, clean net
-value added) as a robustness check alongside the primary 4+ series.
+## Licence
 
-**Known limitations to design around.** Value added is nominal and never deflated.
-Productivity is per worker, not per hour, as hours are unpublished at this granularity.
-Capital exists only for 30+ establishments. The panel ends at reference year 2020
-permanently, because the successor survey publishes no prefecture breakdown.
+Code and documentation are [MIT licensed](LICENSE).
 
----
+This project uses the e-Stat API (政府統計の総合窓口). Its content is not guaranteed by
+the Japanese government.
 
-*This project uses the e-Stat API (政府統計の総合窓口). Its content is not guaranteed by
-the Japanese government.*
+> この分析は、政府統計総合窓口(e-Stat)のAPI機能を使用していますが、
+> サービスの内容は国によって保証されたものではありません。

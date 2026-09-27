@@ -94,7 +94,7 @@ from that survey exists only for broad-division sales and for wholesale and reta
 ends at reference year 2020 permanently.
 
 Full index of all 661 Census of Manufacture tables:
-[estat_table_index.csv](estat_table_index.csv), produced by
+[metadata/estat_table_index.csv](../metadata/estat_table_index.csv), produced by
 `fetch_estat.py discover`.
 
 ## Notes
@@ -126,7 +126,7 @@ Full index of all 661 Census of Manufacture tables:
 
 4. e-Stat's `SURVEY_DATE` metadata field is formulaic and **wrong for every
    survey from 2017 onward**. See
-   [reference_year_mapping.md](reference_year_mapping.md) §2a.
+   [reference-years.md](reference-years.md) §2a.
 
 ## Comparability blocks
 

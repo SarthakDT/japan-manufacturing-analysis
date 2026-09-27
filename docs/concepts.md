@@ -21,7 +21,7 @@ implemented and a pointer to where it was used.
 > two of the three measures proved confounded with industry composition. References to
 > H1, H2 and H3 below are historical, explaining why a concept entered the project.
 > The concepts themselves remain valid and most are reusable. See
-> `02_Measurement_Framework.md` §4.
+> `docs/measurement-framework.md` §4.
 
 Several entries end with a **Pitfall**. In three cases the pitfall is a mistake
 this project actually made and corrected; those are the most useful entries here.
@@ -69,7 +69,7 @@ Roughly 15.1 million yen, about USD 100,000, of value added per worker per year.
 
 **Where used.** The dependent variable of the whole project. Computed in
 `src/build_panel.py` as `va_per_worker`; chosen and justified in
-`02_Measurement_Framework.md`.
+`docs/measurement-framework.md`.
 
 **Pitfall.** The ideal denominator is *hours worked*, not persons, because a region
 with many part-timers looks artificially unproductive per person. Japan's Census of
@@ -153,7 +153,7 @@ In the source data the subtracted term is 原材料使用額等 (raw materials, 
 electricity used), which is why that column is downloaded and preserved alongside
 value added even though the analysis never uses it directly.
 
-**Where used.** The core measurement decision, argued in `02_Measurement_Framework.md`
+**Where used.** The core measurement decision, argued in `docs/measurement-framework.md`
 §2 and carried through every session. It is why the project compares Aichi's
 vertically integrated automotive keiretsu against import-heavy clusters without the
 comparison being meaningless.
@@ -195,7 +195,7 @@ varies by prefecture and **correlates with plant size and capital intensity**, w
 are exactly the things the analysis is trying to explain. That is systematic bias,
 not random noise.
 
-**Where used.** Documented in `metadata/manufacturing_2018_metadata.md` §3. Drove the
+**Where used.** Documented in `docs/variable-definitions.md` §3. Drove the
 choice between table 3-01 (4+, blended) and 3-03 (30+, clean net) — see §4.9.
 
 ---
@@ -211,7 +211,7 @@ denominator includes people who receive no wage, so productivity here is not the
 as output per wage-earner.
 
 **Where used.** Flagged throughout; the label is preserved in Japanese in
-`metadata/manufacturing_2018_metadata.md` precisely so it is not silently redefined.
+`docs/variable-definitions.md` precisely so it is not silently redefined.
 It also explains the 2016 definitional break — see §4.3.
 
 ---
@@ -262,7 +262,7 @@ official statistics and defensible to anyone who knows the field, rather than be
 a bespoke index invented for the occasion.
 
 **Where used.** The justification for choosing value added per worker, with citations,
-in `02_Measurement_Framework.md` §2 and its source list.
+in `docs/measurement-framework.md` §2 and its source list.
 
 ---
 
@@ -282,7 +282,7 @@ mechanisms, still the standard framing:
    people talking, moving jobs, and observing each other.
 
 **Where used.** The theoretical motivation for **H1**, that specialization raises
-productivity. Stated in `02_Measurement_Framework.md` §4, tested indirectly in
+productivity. Stated in `docs/measurement-framework.md` §4, tested indirectly in
 Session 03 and properly framed in Session 04.
 
 **Pitfall.** Agglomeration predicts that being *concentrated in an industry* raises
@@ -412,7 +412,7 @@ H3 (retired). The Herfindahl index itself remains in the panel as `hhi_employmen
 
 **Where used.** The two are in deliberate tension in this project's hypotheses.
 **H1** is a MAR claim (specialization raises the *level* of productivity). **H3** is a
-Jacobs claim (diversification raises *stability*). `02_Measurement_Framework.md` §4
+Jacobs claim (diversification raises *stability*). `docs/measurement-framework.md` §4
 notes explicitly that both may hold at once, because specialization can raise the
 level and the volatility simultaneously.
 
@@ -1089,7 +1089,7 @@ slightly **larger** — the opposite conclusion, from the same data, once the
 comparison is made at a consistent level.
 
 **Where used.** Documented in `notebooks/02_industry_mix_analysis.ipynb` and Session 04 of
-`metadata/work_log.md`. This is closely related to the **ecological fallacy**, where
+`docs/work-log.md`. This is closely related to the **ecological fallacy**, where
 conclusions about individuals are drawn from group-level data.
 
 ---
@@ -1258,7 +1258,7 @@ So a dataset labelled `2019年確報` contains **2018** value added.
 for that dataset and is **wrong for every survey from 2017 onward** — it formulaically
 encodes the survey year as a Jan–Dec span.
 
-**Where documented.** `metadata/reference_year_mapping.md`. Every year in this project
+**Where documented.** `docs/reference-years.md`. Every year in this project
 is a **reference year**.
 
 **Pitfall.** One consequence remains baked in: after 2016, value added for year T is
@@ -1446,7 +1446,7 @@ effects.
 
 Note that 3-03 results measure **large-establishment productivity** — a different
 quantity, not merely a smaller sample. Full reasoning in
-`metadata/manufacturing_2018_metadata.md` §1 and §3.
+`docs/variable-definitions.md` §1 and §3.
 
 ---
 
@@ -1575,12 +1575,12 @@ though industry is held fixed, so regional differences survive.
 
 | Concept | Where |
 |---|---|
-| Labour productivity | `src/build_panel.py`, `02_Measurement_Framework.md` |
-| Value added vs gross output | `02_Measurement_Framework.md` §2 |
-| Net vs gross value added | `metadata/manufacturing_2018_metadata.md` §3 |
-| Persons engaged | `metadata/manufacturing_2018_metadata.md` |
+| Labour productivity | `src/build_panel.py`, `docs/measurement-framework.md` |
+| Value added vs gross output | `docs/measurement-framework.md` §2 |
+| Net vs gross value added | `docs/variable-definitions.md` §3 |
+| Persons engaged | `docs/variable-definitions.md` |
 | Nominal vs real | **gap — see §1.5**, affects the growth figure only |
-| Agglomeration economies | motivation for the retired H1; see `02_Measurement_Framework.md` §4 |
+| Agglomeration economies | motivation for the retired H1; see `docs/measurement-framework.md` §4 |
 | Location quotient | `src/build_panel.py`, `src/lq_break_test.py` |
 | Herfindahl–Hirschman index | `src/build_panel.py` (`hhi_employment`) |
 | MAR vs Jacobs externalities | motivated the retired H1 and H3 |
@@ -1604,20 +1604,20 @@ though industry is held fixed, so regional differences survive.
 | Confounding | Session 04 Finding 4 |
 | **Aggregation bias** | **Session 03 error, corrected in Session 04** |
 | MNAR / suppression | `src/validate_manufacturing.py` |
-| Structural breaks | `metadata/year_availability_matrix.md` |
+| Structural breaks | `docs/data-availability.md` |
 | Outliers / negative values | `src/validate_manufacturing.py` |
-| Census vs sample survey | `metadata/acquisition_log.md` |
-| **Reference period vs survey date** | **`metadata/reference_year_mapping.md`** |
+| Census vs sample survey | `docs/acquisition-log.md` |
+| **Reference period vs survey date** | **`docs/reference-years.md`** |
 | Disclosure control | `src/validate_manufacturing.py` |
 | Control totals | every `metadata/validation_*.json` |
 | Published total vs summed parts | `load_prefecture_totals()` |
-| JSIC | `metadata/manufacturing_2018_metadata.md` |
+| JSIC | `docs/variable-definitions.md` |
 | Geographic double counting | `src/validate_manufacturing.py` |
 | Intercensal estimation | `load_population()` |
-| Units | `src/build_panel.py`, `metadata/work_log.md` §12.5 |
-| Establishment vs enterprise | `metadata/manufacturing_2018_metadata.md` |
+| Units | `src/build_panel.py`, `docs/work-log.md` §12.5 |
+| Establishment vs enterprise | `docs/variable-definitions.md` |
 | Capital intensity | Chart 5 |
-| Keiretsu / Aichi | `02_Measurement_Framework.md`, Chart 6 |
+| Keiretsu / Aichi | `docs/measurement-framework.md`, Chart 6 |
 | CVD-safe palettes | `src/viz_style.py` |
 | Log scales, zero baselines, boxplots | Charts 4 and 7 |
 
