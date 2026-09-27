@@ -32,6 +32,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from dataset import ensure_utf8_stdout, load_cells
+from metrics import employment_share, location_quotient
+
 from validate_manufacturing import (  # noqa: E402  reuse, do not duplicate
     MEASURE_MAP,
     PREF_NAME_TO_CODE,
@@ -165,29 +168,20 @@ def load_population() -> pd.DataFrame:
     return wide
 
 
-def load_industry_slice(year: int, table: str) -> pd.DataFrame:
-    path = PROCESSED / f"manufacturing_{year}_table{table}.csv"
-    if not path.exists():
-        raise SystemExit(f"missing {path}. Run validate_manufacturing.py first.")
-    return pd.read_csv(path, dtype={"prefecture_code": str, "industry_code": str})
 
 
 def build_year(year: int, table: str) -> pd.DataFrame:
     totals = load_prefecture_totals(year, table)
-    ind = load_industry_slice(year, table)
+    ind = load_cells(year, table)
 
     # Shares are computed on the 24 industries so they sum to 1 by construction.
     emp = ind[["prefecture_code", "industry_code", "industry_name",
                "employment", "employment_flag", "value_added", "value_added_flag"]].copy()
     emp["employment"] = emp["employment"].fillna(0.0)
 
-    pref_emp = emp.groupby("prefecture_code")["employment"].transform("sum")
-    nat_emp_by_ind = emp.groupby("industry_code")["employment"].transform("sum")
-    nat_emp = emp["employment"].sum()
-
-    emp["share"] = emp["employment"] / pref_emp
-    emp["nat_share"] = nat_emp_by_ind / nat_emp
-    emp["lq"] = emp["share"] / emp["nat_share"]
+    # Shares and LQ come from src/metrics.py so there is one implementation.
+    emp["share"] = employment_share(emp)
+    emp["lq"] = location_quotient(emp)
 
     rows = []
     for pref_code, grp in emp.groupby("prefecture_code"):
@@ -215,6 +209,7 @@ def build_year(year: int, table: str) -> pd.DataFrame:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--years", nargs="+", type=int, default=DEFAULT_YEARS)
     parser.add_argument("--table", default=DEFAULT_TABLE)

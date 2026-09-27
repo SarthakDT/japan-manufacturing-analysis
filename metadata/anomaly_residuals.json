@@ -1,0 +1,172 @@
+{
+  "year": 2019,
+  "cells_used": 1091,
+  "cells_excluded_nonpositive_va": 2,
+  "grand_effect": 2.349122765923646,
+  "median_abs_residual": 0.16606622235408408,
+  "iterations_converged": true,
+  "top_positive": [
+    {
+      "prefecture_code": "26",
+      "industry_code": "32",
+      "residual": 2.307633275922193,
+      "prefecture": "京都",
+      "industry": "その他の製造業",
+      "pct_vs_expected": 9.050609464721155
+    },
+    {
+      "prefecture_code": "23",
+      "industry_code": "17",
+      "residual": 2.1675308478891218,
+      "prefecture": "愛知",
+      "industry": "石油製品・石炭製品製造業",
+      "pct_vs_expected": 7.7366851816217626
+    },
+    {
+      "prefecture_code": "44",
+      "industry_code": "23",
+      "residual": 1.892615477282059,
+      "prefecture": "大分",
+      "industry": "非鉄金属製造業",
+      "pct_vs_expected": 5.636704149830052
+    },
+    {
+      "prefecture_code": "01",
+      "industry_code": "17",
+      "residual": 1.6886781436827496,
+      "prefecture": "北海道",
+      "industry": "石油製品・石炭製品製造業",
+      "pct_vs_expected": 4.412321662979877
+    },
+    {
+      "prefecture_code": "37",
+      "industry_code": "23",
+      "residual": 1.6223728137635933,
+      "prefecture": "香川",
+      "industry": "非鉄金属製造業",
+      "pct_vs_expected": 4.065094595142154
+    },
+    {
+      "prefecture_code": "30",
+      "industry_code": "25",
+      "residual": 1.6068660778418091,
+      "prefecture": "和歌山",
+      "industry": "はん用機械器具製造業",
+      "pct_vs_expected": 3.98715734870477
+    },
+    {
+      "prefecture_code": "42",
+      "industry_code": "28",
+      "residual": 1.593722855819832,
+      "prefecture": "長崎",
+      "industry": "電子部品・デバイス・電子回路製造業",
+      "pct_vs_expected": 3.922038902908205
+    },
+    {
+      "prefecture_code": "38",
+      "industry_code": "23",
+      "residual": 1.5704753797195738,
+      "prefecture": "愛媛",
+      "industry": "非鉄金属製造業",
+      "pct_vs_expected": 3.808933720049003
+    },
+    {
+      "prefecture_code": "35",
+      "industry_code": "19",
+      "residual": 1.5097394767156112,
+      "prefecture": "山口",
+      "industry": "ゴム製品製造業",
+      "pct_vs_expected": 3.5255516291468334
+    },
+    {
+      "prefecture_code": "09",
+      "industry_code": "10",
+      "residual": 1.4569001167980469,
+      "prefecture": "栃木",
+      "industry": "飲料・たばこ・飼料製造業",
+      "pct_vs_expected": 3.292632223950652
+    }
+  ],
+  "top_negative": [
+    {
+      "prefecture_code": "44",
+      "industry_code": "30",
+      "residual": -1.573663104732871,
+      "prefecture": "大分",
+      "industry": "情報通信機械器具製造業",
+      "pct_vs_expected": -0.7927155148277862
+    },
+    {
+      "prefecture_code": "42",
+      "industry_code": "23",
+      "residual": -1.4238050206449209,
+      "prefecture": "長崎",
+      "industry": "非鉄金属製造業",
+      "pct_vs_expected": -0.7592039623548653
+    },
+    {
+      "prefecture_code": "33",
+      "industry_code": "17",
+      "residual": -1.422389644765935,
+      "prefecture": "岡山",
+      "industry": "石油製品・石炭製品製造業",
+      "pct_vs_expected": -0.7588629041455822
+    },
+    {
+      "prefecture_code": "47",
+      "industry_code": "16",
+      "residual": -1.1568360135678057,
+      "prefecture": "沖縄",
+      "industry": "化学工業",
+      "pct_vs_expected": -0.6855203823128752
+    },
+    {
+      "prefecture_code": "29",
+      "industry_code": "28",
+      "residual": -1.0873052769803675,
+      "prefecture": "奈良",
+      "industry": "電子部品・デバイス・電子回路製造業",
+      "pct_vs_expected": -0.6628762741474123
+    },
+    {
+      "prefecture_code": "35",
+      "industry_code": "17",
+      "residual": -1.0633333072411462,
+      "prefecture": "山口",
+      "industry": "石油製品・石炭製品製造業",
+      "pct_vs_expected": -0.6546971107436685
+    },
+    {
+      "prefecture_code": "34",
+      "industry_code": "22",
+      "residual": -1.0465746246701346,
+      "prefecture": "広島",
+      "industry": "鉄鋼業",
+      "pct_vs_expected": -0.6488615274658819
+    },
+    {
+      "prefecture_code": "39",
+      "industry_code": "25",
+      "residual": -0.9682929563533785,
+      "prefecture": "高知",
+      "industry": "はん用機械器具製造業",
+      "pct_vs_expected": -0.6202692979668409
+    },
+    {
+      "prefecture_code": "04",
+      "industry_code": "27",
+      "residual": -0.9005157616570937,
+      "prefecture": "宮城",
+      "industry": "業務用機械器具製造業",
+      "pct_vs_expected": -0.593639979234313
+    },
+    {
+      "prefecture_code": "08",
+      "industry_code": "27",
+      "residual": -0.8822227040343776,
+      "prefecture": "茨城",
+      "industry": "業務用機械器具製造業",
+      "pct_vs_expected": -0.5861380041288187
+    }
+  ]
+}

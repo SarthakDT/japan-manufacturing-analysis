@@ -1,0 +1,165 @@
+{
+  "years": [
+    2016,
+    2017,
+    2018,
+    2019
+  ],
+  "zero_replacement_fraction": 0.5,
+  "zero_replacement_value": 5.4914881933003843e-05,
+  "pca_components": 7,
+  "pca_variance_explained": 0.8016717974802665,
+  "silhouette_profile": [
+    {
+      "k": 2,
+      "silhouette_kmeans": 0.36714959919086027,
+      "silhouette_ward": 0.5059583061842718,
+      "agreement_ari": 0.35060216837829333
+    },
+    {
+      "k": 3,
+      "silhouette_kmeans": 0.18770183210900918,
+      "silhouette_ward": 0.17787761214504777,
+      "agreement_ari": 0.6956403803035973
+    },
+    {
+      "k": 4,
+      "silhouette_kmeans": 0.15094888840169463,
+      "silhouette_ward": 0.12958254499889135,
+      "agreement_ari": 0.3248023742933414
+    },
+    {
+      "k": 5,
+      "silhouette_kmeans": 0.16670178564863508,
+      "silhouette_ward": 0.15541985053131566,
+      "agreement_ari": 0.6673711277499624
+    },
+    {
+      "k": 6,
+      "silhouette_kmeans": 0.16839330962746196,
+      "silhouette_ward": 0.17010050207914967,
+      "agreement_ari": 0.6199446888262017
+    },
+    {
+      "k": 7,
+      "silhouette_kmeans": 0.17943219448644235,
+      "silhouette_ward": 0.19102303115845365,
+      "agreement_ari": 0.7484775250746889
+    },
+    {
+      "k": 8,
+      "silhouette_kmeans": 0.19156334904543773,
+      "silhouette_ward": 0.19509988649012475,
+      "agreement_ari": 0.704231570438081
+    }
+  ],
+  "k_best": 2,
+  "silhouette_best": 0.36714959919086027,
+  "null_mean": 0.2549414957952352,
+  "null_p95": 0.3350605590566522,
+  "null_exceeded": true,
+  "null_iterations": 200,
+  "stability_ari": [
+    {
+      "from": 2016,
+      "to": 2017,
+      "ari": 1.0
+    },
+    {
+      "from": 2017,
+      "to": 2018,
+      "ari": 1.0
+    },
+    {
+      "from": 2018,
+      "to": 2019,
+      "ari": 0.636260744547429
+    }
+  ],
+  "stability_mean_ari": 0.8787535815158097,
+  "algorithm_agreement_ari": 0.35060216837829333,
+  "criteria": {
+    "exceeds permuted null": true,
+    "stable across years (mean ARI > 0.5)": true,
+    "k-means and Ward agree (ARI > 0.6)": false
+  },
+  "typology_supported": false,
+  "verdict": "QUALIFIED: passes 2 of 3 criteria, failing - k-means and Ward agree (ARI > 0.6). Treat any typology as provisional; do not build analysis on cluster membership.",
+  "cluster_profiles": [
+    {
+      "cluster": 0,
+      "n_prefectures": 7,
+      "over_represented": [
+        "09",
+        "14",
+        "21"
+      ],
+      "under_represented": [
+        "27",
+        "31"
+      ]
+    },
+    {
+      "cluster": 1,
+      "n_prefectures": 40,
+      "over_represented": [
+        "31",
+        "27",
+        "26"
+      ],
+      "under_represented": [
+        "14",
+        "09"
+      ]
+    }
+  ],
+  "cluster_membership": {
+    "01": 0,
+    "02": 1,
+    "03": 1,
+    "04": 1,
+    "05": 1,
+    "06": 1,
+    "07": 1,
+    "08": 1,
+    "09": 1,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 1,
+    "14": 1,
+    "15": 1,
+    "16": 1,
+    "17": 1,
+    "18": 1,
+    "19": 1,
+    "20": 1,
+    "21": 1,
+    "22": 1,
+    "23": 1,
+    "24": 1,
+    "25": 1,
+    "26": 1,
+    "27": 1,
+    "28": 1,
+    "29": 1,
+    "30": 1,
+    "31": 1,
+    "32": 1,
+    "33": 1,
+    "34": 1,
+    "35": 1,
+    "36": 0,
+    "37": 0,
+    "38": 0,
+    "39": 0,
+    "40": 1,
+    "41": 1,
+    "42": 1,
+    "43": 1,
+    "44": 1,
+    "45": 1,
+    "46": 0,
+    "47": 0
+  }
+}

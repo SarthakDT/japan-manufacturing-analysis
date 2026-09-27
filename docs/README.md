@@ -7,7 +7,7 @@ whichever question you have.
 
 | Document | What it answers |
 |---|---|
-| [concepts.md](concepts.md) | Every statistical, economic and manufacturing concept used, from first principles, with worked examples and pointers to where each was applied. ~50 entries. |
+| [concepts.md](concepts.md) | Every statistical, economic, manufacturing and data-engineering concept used, from first principles, with worked examples and pointers to where each was applied. 68 entries, each with a **Learn more** reading list. |
 | [measurement-framework.md](measurement-framework.md) | Why value added per worker is the dependent variable, which independent variables were built, and why the original hypotheses were retired. |
 
 ## Understanding the data
@@ -24,6 +24,15 @@ whichever question you have.
 | Document | What it answers |
 |---|---|
 | [work-log.md](work-log.md) | Chronological development record across seven sessions, including dead ends, bugs and corrections. Long, and deliberately preserves mistakes rather than tidying them away. |
+
+## Analysis notebooks
+
+| Notebook | What it does |
+|---|---|
+| `notebooks/01_exploratory_analysis.ipynb` | Levels, spread, rankings, national trend |
+| `notebooks/02_industry_mix_analysis.ipynb` | Shift-share decomposition and variance shares |
+| `notebooks/03_prefecture_typology.ipynb` | Clustering, with a verdict that it is only provisional |
+| `notebooks/04_anomaly_detection.ipynb` | Median polish, residual surface |
 
 ## Three things worth reading even if you skip everything else
 

@@ -1,6 +1,6 @@
-# Complete work log — Sessions 01–07
+# Complete work log — Sessions 01–08
 
-**Dates:** 2026-09-14 to 2026-09-27
+**Dates:** 2026-09-14 to 2026-09-28
 **Starting state:** four loose files in the project root, no code, no data, no directories
 **Ending state:** a 235-row prefecture × year panel (2016–2020), 7 source modules with
 self-tests, 2 descriptive notebooks, 5 charts, and a concepts reference — with all
@@ -15,6 +15,7 @@ hypothesis-testing work removed after a robustness review
 | 05 | Conceptual reference | `docs/concepts.md`, ~50 concepts |
 | 06 | Capital, convergence, reference year 2020 | panel to 235 rows; ESS shown impossible |
 | 07 | Robustness review and removal | hypothesis-testing work deleted; see Part 20 |
+| 08 | Consolidation, SQL layer, data mining | duplication removed; DuckDB store; clustering and anomaly detection |
 
 **Read this as a chronological record, not a statement of current belief.** It
 deliberately preserves dead ends, tooling accidents, and claims that were later
@@ -28,7 +29,7 @@ Evidence classes are tagged throughout: **verified-from-source** · **downloaded
 **transformed** · **assumed**.
 
 Parts 0–9 are Session 01, 10–15 Session 02, 16 Session 03, 17 Session 04, 18 Session 05,
-19 Session 06, 20 Session 07.
+19 Session 06, 20 Session 07, 21–25 Session 08.
 
 ---
 
@@ -1533,7 +1534,199 @@ until the new hypotheses settle the chart set.
 
 ---
 
+# SESSION 08 — consolidation, SQL, and data mining
+
+---
+
+## Part 21 — Removing duplication before adding anything
+
+Adding a SQL layer on top of the existing code would have created a **third**
+implementation of the location quotient, so consolidation came first.
+
+**Audited duplication.** Three near-identical CSV loaders (`shift_share.load_cells`,
+`build_panel.load_industry_slice`, `lq_break_test.load_employment`), and the location
+quotient implemented twice with **different missing-data handling** — `fillna(0)` in
+one, `flag == 'ok'` in the other.
+
+Checked before changing anything: the two agreed **exactly**, max difference 0.0
+across all 1,118 common cells. Benign, but only by accident — employment is never
+suppressed, so the differing cells contributed zero either way. A correction to one
+would not have reached the other.
+
+**Consolidated into** `src/dataset.py` (one loader) and `src/metrics.py` (one location
+quotient, one Herfindahl), with the missing-data semantics documented rather than
+implicit: missing employment means zero *because employment is never suppressed*,
+unlike value added.
+
+**Regression gate:** the rebuilt panel is byte-identical, md5 `160c8d10…` before and
+after, and every self-test stayed green.
+
+**`lq_break_test.py` reframed.** It existed to clear the retired H1 to pool years
+across the 2016 break. The finding (ρ = 0.9869) is still a live comparability fact, so
+the script stays and the H1 framing goes.
+
+### A portability bug found on the way
+
+These scripts print Japanese prefecture names and **crashed on a default Windows
+console** (cp1252), part-way through — after doing work, before writing output. They
+only ever worked because `PYTHONIOENCODING` was being set manually. Anyone cloning the
+repo would have hit it. `dataset.ensure_utf8_stdout()` now reconfigures stdout, and
+every script that prints Japanese calls it.
+
+This also produced a **false pass**: a comparison against a baseline JSON reported
+"IDENTICAL" while the script had actually crashed before rewriting the file.
+
+---
+
+## Part 22 — A small SQL layer, scoped down twice
+
+The first plan proposed a Kimball star schema justified as "cross-validation" of the
+pandas pipeline. **Both claims were withdrawn after challenge.**
+
+- Writing the same metric twice by the same author catches typos, not conceptual
+  errors. The self-tests already catch more.
+- A star schema over 235 panel rows and ~110k cells solves problems this project does
+  not have: scale, conformed dimensions, slowly-changing dimensions, incremental
+  loads, concurrency. None apply.
+
+**What was built instead:** one long `fact_cells` table (110,544 rows from 13 slices),
+a `fact_panel` table, two thin lookups, four views. DuckDB, Postgres-dialect SQL, no
+server. Views deliberately exclude the location quotient and Herfindahl index, which
+live in `src/metrics.py` — re-deriving them in SQL is the duplication Part 21 removed.
+
+### Two real bugs the load checks caught
+
+**A definitional mismatch.** `v_productivity` first summed the 24 industries and
+disagreed with the panel by up to **0.492**. The panel takes totals from the published
+`【00】製造業計` row, which includes suppressed establishments; summing drops them. The
+check caught a genuine definitional difference, not a typo.
+
+Investigating revealed the deeper issue: the validated CSVs **exclude** the `【00】`
+row by design, so prefecture totals cannot be recovered from `fact_cells` at all.
+Hence the second grain, `fact_panel`, and the view that joins them —
+`v_cell_share_of_prefecture` — which is the query that genuinely needed both.
+
+**A fragile SQL parser.** The question runner split files on `;` to find statement
+boundaries and truncated a query at a semicolon **inside a comment**. Comments are now
+stripped before splitting.
+
+### The coverage cross-check
+
+Warehouse `visible_coverage` matches the panel's independently-computed
+`va_coverage_pct` on all 188 rows to **2.22e-16**. Two different routes, same answer.
+Floor is Shimane 2016 at 0.9476 — chemicals and non-ferrous metals both suppressed.
+
+### The two questions, and a real finding
+
+**Q1: does capital intensity explain productivity at INDUSTRY level?** Yes.
+Spearman **+0.718, p = 7.7e-05** across 24 industries. Petroleum ranks 1st on both;
+leather 24th on both. This matters because at *prefecture* level capital deepening
+explained nothing (Session 06). **Capital explains between-industry productivity and
+not between-region productivity** — a cleaner statement than either result alone.
+
+Biggest divergence: information and communications equipment, 23rd on capital and 8th
+on productivity.
+
+**Q2: which cells moved rank most, 2016 to 2019?** Petroleum and coal dominates, as
+expected from its volatility. The first run had a bug — cells with suppressed value
+added were ranked on NULL productivity, producing a spurious 45-place "gain" for Saga.
+Fixed with an explicit null guard.
+
+---
+
+## Part 23 — Prefecture typology clustering
+
+CLR → PCA (7 components, 80.2% of variance) → k-means and Ward.
+
+**Verdict: QUALIFIED, passing 2 of 3 criteria.**
+
+| Criterion | Result |
+|---|---|
+| Exceeds permuted null | PASS — 0.3671 vs null p95 0.3351 |
+| Stable across years | PASS — ARI 1.000, 1.000, 0.636, mean 0.879 |
+| k-means and Ward agree | **FAIL — ARI 0.351** |
+
+Silhouette peaks at k = 2 (0.367) and collapses to ~0.19 for every larger k, so there
+is at most one meaningful split. What it finds is **7 prefectures versus 40** —
+Hokkaido, the four Shikoku prefectures, Kagoshima and Okinawa, weighted toward food,
+pulp and ceramics. That is closer to outlier detection than to a typology.
+
+The verdict logic initially reported "Supported" because it only checked the null and
+stability. The algorithm-agreement criterion was in the plan and missing from the
+code; adding it changed the answer. **Cluster membership should not be used as a
+variable in later analysis.**
+
+### Two self-test lessons
+
+The fixture expectations were wrong twice, the same way as the shift-share fixture in
+Session 04: **national rates are derived from the fixture**, so an unbalanced fixture
+shifts the benchmark and invalidates every expected value. Fixed by adding a
+mirror-image prefecture so the national split is exactly 50/50.
+
+A second test was **flaky by construction**. Uniform random compositional data is
+exchangeable, so permuting its columns leaves the distribution unchanged — the real
+statistic and the null are draws from the same distribution, and "real ≤ null p95"
+fails 5% of the time by design. Replaced with the non-flaky property, plus its
+complement so a broken permuter cannot pass.
+
+---
+
+## Part 24 — Anomaly detection by median polish
+
+Tukey's median polish on the 47 × 24 matrix of log productivity. Median rather than
+mean because it is **robust to the outliers being searched for** — the self-test
+plants a +5 outlier and shows median polish returning exactly +5 at that cell and
+exactly zero everywhere else, while a mean-based fit smears up to 0.8 across the whole
+row and column.
+
+Closes a gap recorded in `docs/concepts.md` §3.10, which noted a two-way decomposition
+had never been attempted.
+
+**Results, 2019:** 1,091 cells, median absolute residual **0.1661 log points** (~18%).
+Largest positive residual is Kyoto in other manufacturing at **+2.308** (~9× expected),
+then Aichi in petroleum and Oita in non-ferrous metals.
+
+### The cross-check, and why weak agreement is correct
+
+Shift-share interaction against median-polish residual: overall Spearman **−0.13**,
+but the top interaction cells land in the **top 7% of residuals** (Yamaguchi 26/1091,
+Tokushima 24/1091).
+
+That is the expected pattern. The interaction `(s_p − s_N)(π_p − π_N)` is positive in
+*two* different situations — over-represented and productive, or under-represented and
+unproductive — and is weighted by employment share and measured in levels. The
+residual is an unweighted proportional deviation in log space. They answer different
+questions, agree where both are extreme, and there is no reason for the full orderings
+to align.
+
+A fixture error here too: median polish centres effects on their **median**, so a
+fixture whose column effects had median 0.25 correctly returned a grand term of 10.25.
+The code was right; the expectation ignored the identification convention.
+
+### A chart defect caught by looking
+
+The residual heatmap rendered missing cells in the **same near-white** as a zero
+residual, because a diverging map centres on white and matplotlib draws NaN as the
+axes background. Suppressed data was indistinguishable from average data. Fixed with
+an explicit grey for missing.
+
+---
+
+## Part 25 — Documentation
+
+`docs/concepts.md` gained **section 7, Data engineering and data mining**: 14 entries
+covering long-vs-wide storage, why no star schema, DRY, DuckDB versus PostgreSQL,
+window functions, compositional data and CLR, PCA, k-means and Ward, silhouette,
+permutation nulls, adjusted Rand index, median polish, outlier-detection families, and
+three roads not taken (dbt, PySAL/Moran's I, co-location clustering).
+
+Every entry carries a **Learn more** reading list, at the user's explicit request. The
+document is now 68 entries and about 14,100 words.
+
+---
+
 ## Attribution
+
 
 This project uses the e-Stat API (政府統計の総合窓口). Its content is not
 guaranteed by the Japanese government.

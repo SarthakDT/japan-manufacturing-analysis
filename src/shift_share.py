@@ -55,6 +55,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from dataset import ensure_utf8_stdout, load_cells as _load_cells
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED = PROJECT_ROOT / "processed_data"
 
@@ -62,15 +64,12 @@ IDENTITY_TOLERANCE = 1e-9
 
 
 def load_cells(year: int, table: str = "3-01") -> pd.DataFrame:
-    """Usable prefecture x industry cells for one reference year."""
-    path = PROCESSED / f"manufacturing_{year}_table{table}.csv"
-    if not path.exists():
-        raise SystemExit(f"missing {path}. Run validate_manufacturing.py first.")
-    df = pd.read_csv(path, dtype={"prefecture_code": str, "industry_code": str})
-    usable = df[(df.value_added_flag == "ok")
-                & (df.employment_flag == "ok")
-                & (df.employment > 0)].copy()
-    return usable
+    """Usable prefecture x industry cells for one reference year.
+
+    Thin wrapper over `dataset.load_cells` kept so existing callers and
+    notebooks continue to work. The read itself lives in one place.
+    """
+    return _load_cells(year, table, usable_only=True)
 
 
 def decompose(cells: pd.DataFrame, year: int | None = None) -> pd.DataFrame:
@@ -269,6 +268,7 @@ def _self_test() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--years", nargs="+", type=int, default=[2016, 2017, 2018, 2019])

@@ -36,7 +36,8 @@ this project actually made and corrected; those are the most useful entries here
 4. [Official statistics and data quality](#4-official-statistics-and-data-quality)
 5. [Manufacturing domain knowledge](#5-manufacturing-domain-knowledge)
 6. [Visualization](#6-visualization)
-7. [Index: concept to location](#7-index-concept-to-location)
+7. [Data engineering and mining](#7-data-engineering-and-data-mining)
+8. [Index: concept to location](#8-index-concept-to-location)
 
 ---
 
@@ -1571,7 +1572,474 @@ though industry is held fixed, so regional differences survive.
 
 ---
 
-# 7. Index: concept to location
+---
+
+# 7. Data engineering and data mining
+
+Added in Session 08. Every entry ends with **Learn more**, pointing at specific
+material rather than a general search.
+
+---
+
+## 7.1 Long versus wide, and why analytics denormalises
+
+**What it is.** The same data can be stored **wide** (one column per measure) or
+**long** (one row per measure, with a `measure` name column). Wide is readable and
+efficient when every row has every measure. Long is better when different sources
+carry different measure sets, because wide would be mostly empty.
+
+**Worked example [real].** The three source tables carry different measures: table
+3-01 has 6, table 3-03 has 10 (establishment counts split by size band, plus 生産額),
+table 3-04 has 20 (inventories and tangible fixed assets). A single wide table would
+be roughly two-thirds NULL and would need a schema change to add a source.
+
+`fact_cells` is long instead: **110,544 rows** from 13 slices, dense, and extensible.
+
+**Normalisation vs denormalisation.** Transactional databases normalise to avoid
+update anomalies — store a fact once, join to it. Analytical stores often
+*denormalise*, repeating labels on every row, because analytical queries are
+read-mostly and joins cost more than storage. `fact_cells` carries
+`prefecture_name` and `industry_name` inline for exactly that reason.
+
+**Where used.** `sql/01_build.sql`, `src/build_warehouse.py`.
+
+**Learn more**
+- PostgreSQL manual, *Data Definition* and *Queries* chapters
+- Kimball & Ross, *The Data Warehouse Toolkit*, ch. 1–2 (the grain concept)
+
+---
+
+## 7.2 Why this project deliberately did *not* build a star schema
+
+**What a star schema is.** One central fact table at a defined grain, surrounded by
+denormalised dimension tables, with surrogate keys joining them. It is the standard
+analytical pattern, and it solves real problems: conformed dimensions shared across
+business processes, slowly-changing dimensions tracking history, incremental loads,
+and query performance at scale.
+
+**Why it was rejected here.** None of those problems exist in this project.
+
+| Problem a star schema solves | Present here? |
+|---|---|
+| Scale | No — 110k fact rows, 235 panel rows |
+| Conformed dimensions across processes | No — one business process |
+| Slowly-changing dimensions | No — prefecture and industry definitions are fixed |
+| Incremental loading | No — full rebuild takes seconds |
+| Concurrency | No — single analyst |
+
+An earlier plan proposed the full `staging → dimensions → facts → marts` layering and
+justified it partly as "cross-validating" the pandas pipeline. **Both arguments were
+withdrawn.** Writing the same metric twice by the same author catches typos, not
+conceptual errors, and building warehouse ceremony over 110k rows is decoration.
+
+What replaced it: one long fact table, one panel table, two thin lookups, four views.
+
+**The transferable lesson.** Knowing when a pattern does *not* apply is worth as much
+as knowing how to build it. A reviewer who sees a star schema over 235 rows learns
+that the author follows recipes; one who sees this note learns the author thinks.
+
+**Learn more**
+- Kimball & Ross, *The Data Warehouse Toolkit* — read ch. 1 for when it applies
+- dbt's *Dimensional modelling* guide, for the modern reading
+
+---
+
+## 7.3 DRY and the single source of truth
+
+**What it is.** Don't Repeat Yourself: every piece of knowledge should have one
+authoritative representation. Duplicated logic is a maintenance hazard because a fix
+applied to one copy silently leaves the others wrong.
+
+**Worked example [real], from this project.** The location quotient was implemented
+twice — in `build_panel.py` and in `lq_break_test.py` — with *different* missing-data
+handling. One used `fillna(0)`, the other filtered to `flag == 'ok'`.
+
+They were checked against each other and agreed **exactly**: max difference 0.0
+across all 1,118 common cells. The duplication was harmless *because* employment is
+never suppressed, so the cells that differed contributed zero either way.
+
+That is precisely what makes it instructive. **The duplication was benign by
+accident, not by design.** Had suppression ever applied to employment, or had someone
+corrected one copy's handling, the two would have diverged silently and no test would
+have caught it.
+
+Session 08 consolidated both into `src/metrics.py`, with the missing-data semantics
+documented rather than implicit: *missing employment means zero because employment is
+never suppressed, unlike value added.* The regression gate was that the rebuilt panel
+must be byte-identical — it was, md5 `160c8d10…` before and after.
+
+**Where used.** `src/dataset.py` (one loader, replacing three), `src/metrics.py` (one
+location quotient and one Herfindahl, replacing two).
+
+**Learn more**
+- Hunt & Thomas, *The Pragmatic Programmer*, the DRY chapter
+- Fowler, *Refactoring*, "Extract Function" and "Duplicated Code"
+
+---
+
+## 7.4 DuckDB, and how it differs from PostgreSQL
+
+**What it is.** An embedded analytical database. Where PostgreSQL is a server you
+connect to, DuckDB is a library that runs inside your process against a single file
+or purely in memory — SQLite's deployment model with a column-oriented engine built
+for analytics.
+
+| | PostgreSQL | DuckDB |
+|---|---|---|
+| Deployment | Server process | In-process library |
+| Storage | Row-oriented | Column-oriented |
+| Built for | Many small transactions | Few large scans and aggregations |
+| Reads CSV/Parquet directly | Via extensions | Natively |
+
+**Why this project uses it.** No server means the repo is clone-and-run: anyone can
+`pip install duckdb` and rebuild the store in seconds. The SQL dialect is close to
+PostgreSQL, so knowledge transfers in both directions, and this project's SQL avoids
+DuckDB-only syntax where a standard form exists so it ports with little change.
+
+**Where used.** `src/build_warehouse.py`, `sql/`.
+
+**Learn more**
+- duckdb.org documentation, especially *SQL Introduction* and *CSV Import*
+- "DuckDB: an Embeddable Analytical Database" (Raasveldt & Mühleisen, SIGMOD 2019)
+
+---
+
+## 7.5 Window functions and CTEs
+
+**What they are.** A **window function** computes across a set of rows related to the
+current row *without collapsing them*, unlike `GROUP BY`. A **CTE** (`WITH … AS`) names
+an intermediate result so a query reads as a sequence of steps.
+
+**Equation-like form.**
+
+```sql
+SUM(value) OVER (PARTITION BY prefecture)          -- total beside each row
+RANK()     OVER (PARTITION BY industry ORDER BY x) -- rank within each industry
+LAG(value) OVER (PARTITION BY cell ORDER BY year)  -- previous year's value
+```
+
+**Worked example [real].** `v_year_over_year` uses `LAG` partitioned by cell and
+ordered by reference year to produce year-on-year change without a self-join.
+`sql/03_questions.sql` Q2 ranks prefectures within each industry per year, then
+differences those ranks across years — two window passes over a CTE chain.
+
+**Pitfall caught here.** The question runner originally split SQL files on `;` to
+find statement boundaries, which truncated a query at a semicolon **inside a
+comment**, producing an unparseable fragment. Comments are stripped before splitting
+now. Naive SQL parsing by string-splitting is fragile.
+
+**Where used.** `sql/02_views.sql`, `sql/03_questions.sql`.
+
+**Learn more**
+- PostgreSQL tutorial, *Window Functions* chapter — you already know Postgres, so go
+  straight to this and to *WITH Queries (Common Table Expressions)*
+- Use `WINDOW w AS (…)` to name a window reused across several columns
+
+---
+
+## 7.6 Compositional data and the centred log-ratio transform
+
+**What it is.** Data where components are shares of a whole and sum to a constant.
+Industry employment shares are compositional: they sum to 1 for every prefecture.
+
+**Why ordinary distance is invalid.** The components are not free to vary
+independently — raising one share necessarily lowers the others. Two consequences:
+apparent correlation between components is partly an artefact of the constraint
+(**spurious correlation**, noted by Karl Pearson in 1897), and Euclidean distance on
+a simplex does not behave as distance normally does.
+
+**Equation.** The centred log-ratio transform divides each component by the geometric
+mean of the whole vector, then takes logs:
+
+```
+clr(x)_i = log( x_i / g(x) ),      g(x) = (x_1 · x_2 · … · x_D)^(1/D)
+```
+
+CLR vectors sum to zero by construction, and live in ordinary real space where
+Euclidean distance is meaningful.
+
+**Worked example [illustrative].** Shares (0.5, 0.3, 0.2) have geometric mean
+(0.5·0.3·0.2)^(1/3) ≈ 0.3107, so the CLR is
+(log 1.609, log 0.966, log 0.644) ≈ (0.476, −0.035, −0.441), which sums to zero.
+
+**Zeros.** log(0) is undefined, so zero shares need a small multiplicative
+replacement before transforming. This project replaces them with half the smallest
+observed non-zero share and renormalises; the value is reported in the output.
+
+**Where used.** `src/cluster_typology.py`. Skipping CLR is a quiet error — the
+clustering still runs, and the answer is still wrong.
+
+**Learn more**
+- Aitchison, *The Statistical Analysis of Compositional Data* (1986) — the source
+- `scikit-bio`'s `composition` module docs for a short practical treatment
+- Pearson (1897) on spurious correlation of ratios, for the intuition
+
+---
+
+## 7.7 Principal component analysis
+
+**What it is.** A rotation of the data onto new axes ordered by how much variance
+each explains. The first component is the direction of greatest spread, the second
+the greatest remaining spread orthogonal to it, and so on. Keeping the first few
+reduces dimensions while retaining most of the variation.
+
+**Why use it before clustering.** Distance becomes less discriminating as dimensions
+grow — in high dimensions all points drift toward equidistant, the "curse of
+dimensionality". Reducing 24 industry dimensions to a handful of components makes
+distances more meaningful and removes correlated noise.
+
+**Worked example [real].** CLR-transformed shares for 2019 reduce to **7 components
+covering 80.2%** of variance, with PC1 at 27% and PC2 at 16%.
+
+**Pitfalls.** PCA is scale-sensitive, so inputs usually need standardising (CLR
+already puts everything in comparable log units here). Components are linear
+combinations of all inputs, so they rarely have a clean interpretation, and reading
+meaning into them is a common overreach.
+
+**Where used.** `src/cluster_typology.py`, and the axes of Chart 9.
+
+**Learn more**
+- James, Witten, Hastie & Tibshirani, *An Introduction to Statistical Learning*, ch. 12
+  (free PDF at statlearning.com) — the clearest treatment at this level
+- scikit-learn user guide, *Decomposing signals in components*
+
+---
+
+## 7.8 k-means and Ward hierarchical clustering
+
+**What they are.** Two ways to partition objects into groups.
+
+**k-means** picks k centres, assigns each point to its nearest, recomputes the
+centres as the mean of their members, and repeats until nothing moves. It minimises
+within-cluster sum of squares. It needs k in advance, is sensitive to the starting
+centres (hence `n_init=25` here), and assumes roughly spherical, similarly-sized
+clusters.
+
+**Ward hierarchical clustering** starts with every point in its own cluster and
+repeatedly merges the pair whose merger increases total within-cluster variance
+least, producing a full tree that can be cut at any k.
+
+**Why run both.** They make different assumptions, so agreement is evidence that
+structure is real rather than an artefact of one algorithm.
+
+**Worked example [real].** At the chosen k = 2 the two methods **disagree**:
+adjusted Rand index 0.351. That is the criterion that failed, and it is why the
+typology is reported as provisional rather than established.
+
+**Where used.** `src/cluster_typology.py`.
+
+**Learn more**
+- ISLR ch. 12.4 — k-means and hierarchical clustering side by side
+- scikit-learn user guide, *Clustering*, especially the comparison figure showing
+  which algorithms fail on which shapes
+
+---
+
+## 7.9 Silhouette score and choosing k
+
+**What it is.** For each point, how much closer it is to its own cluster than to the
+nearest other cluster:
+
+```
+s(i) = ( b(i) − a(i) ) / max( a(i), b(i) )
+
+a(i) = mean distance to points in its own cluster
+b(i) = mean distance to points in the nearest other cluster
+```
+
+Ranges from −1 to +1. Above about 0.5 is reasonable structure, 0.25–0.5 is weak,
+below 0.25 is essentially none. The overall score is the mean over all points.
+
+**Worked example [real].** Silhouette by k for the 47 prefectures:
+
+| k | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|
+| k-means | **0.367** | 0.188 | 0.151 | 0.167 | 0.168 | 0.179 | 0.192 |
+
+The shape matters more than the peak: a single peak at k = 2 collapsing to ~0.19
+everywhere else means at most one meaningful split, not a rich typology. And 0.367 is
+itself only weak-to-moderate.
+
+**Pitfall.** Reporting only the winning k hides this shape. The profile across all k
+is the informative object.
+
+**Where used.** `src/cluster_typology.py`, notebook 03.
+
+**Learn more**
+- scikit-learn user guide, *Clustering performance evaluation*
+- Rousseeuw (1987), the original silhouette paper
+
+---
+
+## 7.10 Permutation null testing
+
+**What it is.** Instead of assuming a theoretical null distribution, build one by
+repeatedly shuffling the data to destroy the structure you are testing for, while
+preserving everything else. Compare the real statistic against that distribution.
+
+**Why it matters for clustering.** Clustering algorithms **always** return clusters.
+They have no way to report "there is no structure here". The permuted null supplies
+the missing comparison: how good would the clustering look on data with no structure
+at all?
+
+**The shuffle must destroy the right thing.** Here each industry's shares are
+permuted independently across prefectures. That preserves every industry's marginal
+distribution while removing any tendency for particular industries to co-occur — which
+is exactly the structure a typology rests on.
+
+**Worked example [real].** Real silhouette 0.3671 against a null of mean 0.2549 and
+95th percentile 0.3351 over 200 iterations. The real value exceeds the null, so this
+criterion passes — but only just, which the notebook says plainly.
+
+**A subtlety found while testing.** Uniform random compositional data is
+*exchangeable*: permuting its columns leaves the distribution unchanged, so the real
+statistic and the null are draws from the same distribution. A self-test asserting
+"structureless data scores below the null's 95th percentile" therefore fails 5% of the
+time by construction. The test now asserts the weaker, non-flaky property that the
+real value sits inside the bulk of the null.
+
+**Where used.** `src/cluster_typology.py`.
+
+**Learn more**
+- Efron & Tibshirani, *An Introduction to the Bootstrap*, on permutation tests
+- Good, *Permutation, Parametric and Bootstrap Tests of Hypotheses*
+
+---
+
+## 7.11 Adjusted Rand index
+
+**What it is.** How much two partitions of the same objects agree, corrected for the
+agreement expected by chance. 1 is identical, 0 is chance-level, negative is worse
+than chance. The unadjusted Rand index is misleading because random partitions score
+well above zero on it.
+
+**Two uses here, both important.**
+
+*Stability across time.* Cluster each year independently and compare. A real typology
+persists; noise reshuffles. **Real values: 2016→2017 = 1.000, 2017→2018 = 1.000,
+2018→2019 = 0.636, mean 0.879.** Stable, though the final year shifts.
+
+*Agreement between algorithms.* k-means against Ward at the same k. **Real value at
+k = 2: 0.351** — weak, and the reason the typology is reported as provisional.
+
+**Where used.** `src/cluster_typology.py`.
+
+**Learn more**
+- scikit-learn user guide, *Clustering performance evaluation*, the ARI section
+- Hubert & Arabie (1985), the paper that introduced the adjustment
+
+---
+
+## 7.12 Median polish
+
+**What it is.** Tukey's robust two-way decomposition. Iteratively subtract row
+medians then column medians from a matrix until the effects stop changing, leaving
+
+```
+value(i,j) = grand + row(i) + col(j) + residual(i,j)
+```
+
+**Why median and not mean.** A mean-based fit is dragged by the very outliers you are
+hunting: an extreme cell inflates its own row and column effects, shrinking its own
+residual and hiding itself. The median has a **50% breakdown point**, so a minority of
+extreme cells cannot move the effects they are measured against.
+
+**Worked example [real], from the self-test.** Plant a single +5 outlier in an
+otherwise perfectly additive matrix. Median polish returns a residual of exactly
++5.000 at that cell and **exactly zero everywhere else**. The same data through a
+mean-based two-way fit smears contamination up to 0.8 across the outlier's whole row
+and column. That contrast is asserted in the test.
+
+**Identification.** The decomposition is defined only up to a constant; median polish
+fixes it by centring both effect vectors on their median. A fixture whose effects do
+not have median zero will return a different grand term — the right answer in a
+different parameterisation, which is easy to mistake for a bug.
+
+**Worked example [real], on the data.** 2019, 1,091 usable cells, median absolute
+residual **0.1661 log points** (about 18%). Largest positive residual: Kyoto in "other
+manufacturing" at **+2.308 log points**, roughly nine times its expected level.
+
+**Where used.** `src/anomaly_detect.py`, notebook 04, Chart 10.
+
+**Learn more**
+- Tukey, *Exploratory Data Analysis* (1977), ch. 10–11 — the original, still the best
+- NIST/SEMATECH *e-Handbook of Statistical Methods*, section on median polish
+
+---
+
+## 7.13 Outlier detection: which family fits
+
+**What it is.** Outlier methods differ mainly in what they consider "normal".
+
+| Family | Normal means | Fits here? |
+|---|---|---|
+| Distributional (z-score, IQR) | Close to the centre of one distribution | No — ignores industry and region structure |
+| Model residual (median polish, regression) | Close to what a model predicts | **Yes** — used |
+| Density (LOF, DBSCAN) | In a dense neighbourhood | Poorly — 1,128 points in 2 meaningful dimensions |
+| Isolation (isolation forest) | Hard to isolate by random splits | Possible, but gives no interpretable reason |
+
+**Why the model-residual family.** The question is not "which cells have extreme
+productivity" — that is answered by sorting, and the answer is petroleum refining.
+The question is "which cells are extreme **given** their industry and their region",
+which is by definition a residual from a two-way model.
+
+**Where used.** `src/anomaly_detect.py`.
+
+**Learn more**
+- scikit-learn user guide, *Novelty and Outlier Detection*, for the algorithm families
+- Aggarwal, *Outlier Analysis*, ch. 1–3
+
+---
+
+## 7.14 Roads not taken
+
+Three methods considered and deliberately not used. Recording why is part of the
+method.
+
+### dbt — the analytics-engineering layer
+
+**What it would add.** Model lineage graphs, built-in schema tests, generated
+documentation, and environment separation. It is the standard tool for managing SQL
+transformations and a strong signal for analytics-engineering roles.
+
+**Why not now.** DuckDB and scikit-learn were already two new tools in one session;
+three is too many to learn well. `dbt-duckdb` makes this a natural next step once the
+SQL layer is familiar, and the existing `sql/` layout maps onto dbt models directly.
+
+**Learn more** — dbt Fundamentals (free course, dbt Labs); the `dbt-duckdb` adapter docs
+
+### PySAL and spatial autocorrelation
+
+**What it would add.** Do productive prefectures *neighbour* other productive
+prefectures? **Moran's I** measures global spatial autocorrelation; **LISA** localises
+it. Both use permutation inference, which makes them appropriate at n = 47 — unlike
+the regressions this project withdrew.
+
+**Why not now.** Requires prefecture boundary geometry, a new dataset and a new
+dependency chain (geopandas, shapely).
+
+**Learn more** — Rey, Arribas-Bel & Wolf, *Geographic Data Science with Python*,
+ch. 6–7 (free online); the `esda` documentation
+
+### Co-location clustering of industries
+
+**What it would add.** The strongest fit for this data shape. Instead of clustering
+47 prefectures in 24 dimensions (sparse, and it showed), cluster the **24 industries**
+by how their employment co-locates across the 47 prefectures. That is 276 industry
+pairs each measured over 47 observations — a far better ratio, and it would produce a
+Japan-specific industry taxonomy comparable to the official JSIC grouping.
+
+**Why not now.** The session's scope was set to prefecture typology and anomaly
+detection. This is the clearest next analysis.
+
+**Learn more** — Delgado, Porter & Stern, *Defining Clusters of Related Industries*,
+[NBER w20375](https://www.nber.org/papers/w20375) / *Journal of Economic Geography*
+16(1), 2016; the [US Cluster Mapping Project](https://www.isc.hbs.edu/resources/Pages/data.aspx)
+for the applied version
+
+---
+
+# 8. Index: concept to location
 
 | Concept | Where |
 |---|---|
@@ -1620,6 +2088,20 @@ though industry is held fixed, so regional differences survive.
 | Keiretsu / Aichi | `docs/measurement-framework.md`, Chart 6 |
 | CVD-safe palettes | `src/viz_style.py` |
 | Log scales, zero baselines, boxplots | Charts 4 and 7 |
+| Long vs wide, denormalisation | §7.1 · `sql/01_build.sql` |
+| **Why no star schema** | **§7.2 — the pattern deliberately rejected** |
+| **DRY / single source of truth** | **§7.3 · `src/dataset.py`, `src/metrics.py`** |
+| DuckDB vs PostgreSQL | §7.4 · `src/build_warehouse.py` |
+| Window functions, CTEs | §7.5 · `sql/02_views.sql`, `sql/03_questions.sql` |
+| Compositional data, CLR transform | §7.6 · `src/cluster_typology.py` |
+| PCA | §7.7 · Chart 9 |
+| k-means, Ward clustering | §7.8 · `src/cluster_typology.py` |
+| Silhouette, choosing k | §7.9 · notebook 03 |
+| Permutation null testing | §7.10 · `src/cluster_typology.py` |
+| Adjusted Rand index | §7.11 · stability and algorithm agreement |
+| Median polish | §7.12 · `src/anomaly_detect.py`, Chart 10 |
+| Outlier detection families | §7.13 |
+| dbt, PySAL, co-location clustering | §7.14 — considered, not used |
 
 ---
 

@@ -34,6 +34,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from dataset import ensure_utf8_stdout
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RAW_ROOT = PROJECT_ROOT / "raw_data" / "manufacturing"
 PROCESSED_ROOT = PROJECT_ROOT / "processed_data"
@@ -577,6 +579,7 @@ def run_self_test(tmp_dir: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_utf8_stdout()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-year", type=int)
     parser.add_argument("--table", default="3-01")

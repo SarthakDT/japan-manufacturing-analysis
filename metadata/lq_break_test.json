@@ -1,12 +1,13 @@
 {
   "test": "LQ rank stability across the reference-year-2016 employment break",
+  "purpose": "data comparability check",
   "years_compared": [
     2014,
     2016
   ],
   "sources": {
-    "2014": "manufacturing_2014_tablemuni3-01.csv",
-    "2016": "manufacturing_2016_table3-01.csv"
+    "2014": "muni3-01",
+    "2016": "3-01"
   },
   "measure": "従業者数, establishments with 4+ employees",
   "pairs_available": 1120,
@@ -192,5 +193,5 @@
     "n_below_0.90": 0
   },
   "national_employment_change_pct": 2.2708119604147203,
-  "verdict": "LQ ordering is stable across the break. H1 can use the full 8-observation set, with the break still noted."
+  "verdict": "LQ ordering is stable across the break. Prefecture rankings on LQ are comparable either side of reference year 2016, though LEVELS still warrant a block dummy."
 }

@@ -4,6 +4,10 @@ numpy>=1.26
 scipy>=1.11
 matplotlib>=3.8
 
+# SQL layer and data mining (Session 08)
+duckdb>=1.0
+scikit-learn>=1.4
+
 # Notebook execution (only needed to re-run notebooks/)
 nbformat>=5.10
 nbconvert>=7.16

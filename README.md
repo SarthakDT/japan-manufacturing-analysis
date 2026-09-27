@@ -40,6 +40,9 @@ See [Statistical power](#statistical-power) below.
 | 4 | Productive prefectures **beat their peers** rather than just holding better industries: within-industry performance outweighs industry mix in 37 of 47 prefectures, stable across all four years |
 | 5 | Industry identity explains **51.6%** of cell-level variance against **15.0%** for prefecture identity, while the aggregate decomposition points the other way — both hold, because prefectures are too diversified for industry differences to reach their totals |
 | 6 | Nominal productivity was **flat**: +0.34% a year, 2016–2019, and unchanged in 2020 |
+| 7 | **Capital intensity explains productivity between industries but not between regions.** Across the 24 industries the two rank together at Spearman **+0.72** (p < 0.001); at prefecture level capital deepening explained nothing |
+| 8 | **Prefectures do not form distinct industrial types.** Clustering gives one 7-versus-40 split that beats a permuted null and is stable year to year, but k-means and Ward disagree on membership (ARI 0.351), so it is reported as provisional |
+| 9 | **Most cells are unremarkable once industry and region are removed.** Median absolute residual 0.17 log points; the extremes are dominated by volatile process industries |
 
 ## Repository structure
 
@@ -47,14 +50,25 @@ See [Statistical power](#statistical-power) below.
 ├── src/                        Pipeline modules, each runnable and self-tested
 │   ├── fetch_estat.py            e-Stat API client, writes provenance manifests
 │   ├── validate_manufacturing.py cleaning, suppression flags, 47×24 grid validation
+│   ├── dataset.py                the one canonical CSV loader
+│   ├── metrics.py                the one location quotient and Herfindahl index
 │   ├── build_panel.py            prefecture × year analysis panel
 │   ├── shift_share.py            mix/within decomposition with asserted identity
 │   ├── econ_census.py            reference year 2020 + comparability gate
-│   ├── lq_break_test.py          rank-correlation test for the 2016 definition break
+│   ├── lq_break_test.py          rank-correlation comparability check across 2016
+│   ├── build_warehouse.py        loads the CSVs into a queryable DuckDB store
+│   ├── cluster_typology.py       CLR → PCA → clustering, with a permuted null
+│   ├── anomaly_detect.py         median polish, robust two-way residuals
 │   └── viz_style.py              validated palette, romaji and industry label maps
+├── sql/                        Postgres-dialect SQL over DuckDB
+│   ├── 01_build.sql              fact_cells, fact_panel, two lookups
+│   ├── 02_views.sql              capital intensity, size-class comparison, YoY
+│   └── 03_questions.sql          two questions the 14 CSVs made awkward
 ├── notebooks/                  Executed, outputs embedded — render directly on GitHub
 │   ├── 01_exploratory_analysis.ipynb
-│   └── 02_industry_mix_analysis.ipynb
+│   ├── 02_industry_mix_analysis.ipynb
+│   ├── 03_prefecture_typology.ipynb
+│   └── 04_anomaly_detection.ipynb
 ├── processed_data/             Validated CSVs — notebooks run without an API key
 ├── raw_data/                   Download manifests (bulk JSON is gitignored)
 ├── metadata/                   Validation reports and table indexes
@@ -73,9 +87,11 @@ pip install -r requirements.txt
 The processed panel is committed, so the analysis runs with no API key:
 
 ```bash
-python src/build_panel.py            # rebuild the panel, 235 rows, 13 validation checks
-python src/shift_share.py --self-test # verify the decomposition identity
-python src/lq_break_test.py           # structural-break test
+python src/build_panel.py                        # panel, 235 rows, 13 checks
+python src/build_warehouse.py --rebuild --check  # DuckDB store + load checks
+python src/build_warehouse.py --questions        # the two SQL analyses
+python src/cluster_typology.py                   # clustering + permuted null
+python src/anomaly_detect.py                     # median-polish residuals
 ```
 
 To re-acquire the raw data you need a free [e-Stat API key](https://www.e-stat.go.jp/mypage/user/preregister):
@@ -157,6 +173,7 @@ Full index at **[docs/README.md](docs/README.md)**. Most useful entry points:
 
 - [docs/concepts.md](docs/concepts.md) — every concept used, from first principles, ~50 entries
 - [docs/reference-years.md](docs/reference-years.md) — the year-label problem and its proof
+- [docs/concepts.md](docs/concepts.md) §7 — data engineering and mining, including **why this project deliberately did not build a star schema**
 - [docs/work-log.md](docs/work-log.md) — chronological development record, including the mistakes
 
 ## Licence

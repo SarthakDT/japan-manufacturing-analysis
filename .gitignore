@@ -16,6 +16,10 @@ metadata/estat_statslist_raw*.json
 *.docx
 *.pdf
 
+# --- Generated analytical store ----------------------------------------------
+# Rebuilt in seconds from the committed CSVs:  python src/build_warehouse.py --rebuild
+warehouse/*.duckdb
+
 # --- Python ------------------------------------------------------------------
 __pycache__/
 *.py[cod]

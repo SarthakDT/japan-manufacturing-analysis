@@ -14,13 +14,19 @@ varies by industry: officer-heavy industries (many small owner-managed
 establishments) gain proportionally more than plant-heavy ones.
 
 The test. Rank-correlate LQ at reference year 2014 against reference year 2016
-and see how much of the cross-sectional ordering is preserved. High correlation
-means the LQ ordering is stable across the break and H1 can use all eight
-observations. Low correlation means LQ inherits the break and must be modelled in
-two blocks, cutting H1 to four.
+and measure how much of the cross-sectional ordering is preserved. High
+correlation means the ordering is stable across the break and LQ may be compared
+across it; low correlation would mean LQ inherits the break and the two blocks
+are not comparable.
 
-This tests ORDERING, not levels. It cannot tell you the break is harmless for a
-regression in LQ levels — only that prefectures keep their relative positions.
+This is a DATA COMPARABILITY check, and that is all it has ever been. It was
+originally run to decide whether a now-retired hypothesis could pool years either
+side of the break. That hypothesis is gone, but the question it answered is not:
+any future analysis spanning 2016 needs to know whether the break moves the
+ordering. The answer is that it does not.
+
+It tests ORDERING, not levels. A stable ranking does not license pooling LQ
+levels across the break without a block dummy.
 
 Usage:
     python src/lq_break_test.py
@@ -35,6 +41,9 @@ from pathlib import Path
 import pandas as pd
 from scipy import stats
 
+from dataset import ensure_utf8_stdout, load_cells
+from metrics import employment_share, location_quotient
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROCESSED = PROJECT_ROOT / "processed_data"
 METADATA = PROJECT_ROOT / "metadata"
@@ -42,16 +51,16 @@ METADATA = PROJECT_ROOT / "metadata"
 # Both slices are 従業者数 for establishments with 4+ employees, so coverage is
 # comparable and the only differences are the definitional ones under test.
 SLICES = {
-    2014: "manufacturing_2014_tablemuni3-01.csv",   # 平成26年確報 市区町村編
-    2016: "manufacturing_2016_table3-01.csv",       # 平成29年確報 地域別 3-01
+    2014: "muni3-01",   # 平成26年確報 市区町村編
+    2016: "3-01",       # 平成29年確報 地域別 3-01
 }
 
 
-def load_employment(path: Path, year: int) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype={"prefecture_code": str, "industry_code": str})
-    keep = df["employment_flag"] == "ok"
-    out = df.loc[keep, ["prefecture_code", "prefecture_name",
-                        "industry_code", "industry_name", "employment"]].copy()
+def load_employment(year: int, table: str) -> pd.DataFrame:
+    """Employment cells for one reference year, via the shared loader."""
+    df = load_cells(year, table)
+    out = df[["prefecture_code", "prefecture_name",
+              "industry_code", "industry_name", "employment"]].copy()
     out["year"] = year
     return out
 
@@ -63,24 +72,17 @@ def compute_lq(df: pd.DataFrame) -> pd.DataFrame:
     coverage. Mixing in the published national total would import the value of
     cells that are suppressed inside the panel and bias every share.
     """
-    total = df["employment"].sum()
-    pref_total = df.groupby("prefecture_code")["employment"].transform("sum")
-    ind_total = df.groupby("industry_code")["employment"].transform("sum")
     out = df.copy()
-    out["pref_share"] = out["employment"] / pref_total
-    out["nat_share"] = ind_total / total
-    out["lq"] = out["pref_share"] / out["nat_share"]
+    # Single implementation, shared with build_panel.py — see src/metrics.py.
+    out["pref_share"] = employment_share(out)
+    out["lq"] = location_quotient(out)
     return out
 
 
 def main() -> int:
-    frames = {}
-    for year, fname in SLICES.items():
-        path = PROCESSED / fname
-        if not path.exists():
-            print(f"ERROR: missing {path}. Run validate_manufacturing.py first.")
-            return 2
-        frames[year] = compute_lq(load_employment(path, year))
+    ensure_utf8_stdout()
+    frames = {year: compute_lq(load_employment(year, table))
+              for year, table in SLICES.items()}
 
     a, b = frames[2014], frames[2016]
     merged = a.merge(b, on=["prefecture_code", "industry_code"],
@@ -89,6 +91,7 @@ def main() -> int:
 
     report: dict = {
         "test": "LQ rank stability across the reference-year-2016 employment break",
+        "purpose": "data comparability check",
         "years_compared": [2014, 2016],
         "sources": {str(k): v for k, v in SLICES.items()},
         "measure": "従業者数, establishments with 4+ employees",
@@ -136,15 +139,16 @@ def main() -> int:
 
     verdict_rho = float(rhos.median())
     if verdict_rho > 0.95:
-        verdict = ("LQ ordering is stable across the break. H1 can use the full "
-                   "8-observation set, with the break still noted.")
+        verdict = ("LQ ordering is stable across the break. Prefecture rankings on "
+                   "LQ are comparable either side of reference year 2016, though "
+                   "LEVELS still warrant a block dummy.")
     elif verdict_rho > 0.90:
-        verdict = ("LQ ordering is largely but not fully stable. Usable across the "
-                   "break with a block dummy; report sensitivity to dropping "
+        verdict = ("LQ ordering is largely but not fully stable. Comparable across "
+                   "the break with a block dummy; report sensitivity to dropping "
                    "pre-2016 years.")
     else:
-        verdict = ("LQ inherits the break. Model the two blocks separately; H1 "
-                   "effectively has 4 observations.")
+        verdict = ("LQ inherits the break. Treat the two blocks as separate series; "
+                   "do not compare LQ across reference year 2016.")
     report["verdict"] = verdict
 
     print("LQ break test — reference year 2014 vs 2016 (従業者数, 4+ establishments)")
