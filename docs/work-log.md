@@ -1888,6 +1888,31 @@ line, it failed as it should.
 pull request. `requirements.txt` gained `streamlit` and `plotly`; `app/requirements.txt`
 lists only what the deployed app needs.
 
+### The first CI run failed, and it was right to
+
+The first push passed locally and on a fresh local clone, then **failed in CI**.
+The job log needs authentication, so the cause was reproduced instead: a scratch
+virtualenv with the latest versions allowed by `requirements.txt` resolved
+**pandas 3.0.6** (local was 2.2.3). Under it the metrics self-test crashed with
+`ZeroDivisionError`.
+
+The cause: the fixture grows a frame with `.loc[len(df)] = [...]`. Under pandas 3
+that turns the employment column into `object` dtype, and object arithmetic raises
+on 0/0 where float arithmetic returns NaN. The fix is in `metrics.py`, not the
+fixture: employment is coerced to float before any share is computed, so the metric
+no longer depends on the caller's dtype. After the fix, all 11 steps pass under
+both pandas 2.2 and 3.0.
+
+A first guess was wrong. I assumed the staleness check's exact string comparison
+had tripped on last-digit float differences between Windows and Linux, and started
+writing that into a docstring before the reproduction ran. The reproduction showed
+the staleness check passing. The comparison was still made tolerance-based (1e-9
+relative), because the risk is real. But the docstring now describes a risk, not
+this failure, and the check was mutation-tested again.
+
+This is the case for CI in one incident: a clean machine with current dependencies
+found a failure that no run on the author's machine could have found.
+
 ---
 
 ## Part 30 — README, executive summary, concepts

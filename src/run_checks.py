@@ -28,6 +28,7 @@ import tempfile
 import time
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -59,6 +60,39 @@ def steps(tmp: Path) -> list[tuple[str, list[str] | None]]:
     ]
 
 
+CODE_COLUMNS = {"prefecture_code": str, "industry_code": str, "top_industry_code": str}
+REL_TOLERANCE = 1e-9
+
+
+def read_extract(path: Path) -> pd.DataFrame:
+    return pd.read_csv(path, dtype=CODE_COLUMNS, encoding="utf-8-sig")
+
+
+def frames_match(a: pd.DataFrame, b: pd.DataFrame) -> tuple[bool, str]:
+    """Same shape and columns, text identical, numbers equal to 1e-9 relative.
+
+    Not an exact string comparison. The residuals pass through log and expm1,
+    whose last binary digit can differ between the Windows and Linux maths
+    libraries, so an extract built on one machine and checked on another may
+    differ in the 16th significant figure while agreeing in every figure that
+    means anything. An exact string comparison would fail on that noise.
+    """
+    if list(a.columns) != list(b.columns) or len(a) != len(b):
+        return False, "shape or columns differ"
+    for col in a.columns:
+        x, y = a[col], b[col]
+        if pd.api.types.is_numeric_dtype(x) and pd.api.types.is_numeric_dtype(y):
+            if not (x.isna() == y.isna()).all():
+                return False, f"{col}: missing values differ"
+            xv, yv = x[x.notna()].to_numpy(float), y[y.notna()].to_numpy(float)
+            diff = abs(xv - yv) > REL_TOLERANCE * np.maximum(1.0, abs(yv))
+            if diff.any():
+                return False, f"{col}: {int(diff.sum())} values differ"
+        elif not x.astype(str).equals(y.astype(str)):
+            return False, f"{col}: text differs"
+    return True, ""
+
+
 def check_extract_is_current() -> int:
     """Rebuild the extract in memory and compare it to what is committed.
 
@@ -80,10 +114,9 @@ def check_extract_is_current() -> int:
             # identically; the comparison is then about content, not dtypes.
             fresh_path = Path(d) / f"{name}.csv"
             fresh.to_csv(fresh_path, index=False, encoding="utf-8-sig")
-            read = lambda p: pd.read_csv(p, dtype=str, encoding="utf-8-sig")  # noqa: E731
-            same = read(fresh_path).equals(read(committed_path))
+            same, detail = frames_match(read_extract(fresh_path), read_extract(committed_path))
             print(f"  [{'PASS' if same else 'FAIL'}] {name}.csv is current"
-                  + ("" if same else "  -> re-run python src/build_dashboard_data.py"))
+                  + ("" if same else f"  -> {detail}; re-run python src/build_dashboard_data.py"))
             failures += (not same)
     return 1 if failures else 0
 

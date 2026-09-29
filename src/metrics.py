@@ -40,7 +40,11 @@ IND = "industry_code"
 def _employment_grid(cells: pd.DataFrame) -> pd.DataFrame:
     """Copy with employment coerced to a complete, zero-filled column."""
     out = cells.copy()
-    out[EMPLOYMENT] = out[EMPLOYMENT].fillna(0.0)
+    # Force float. Under pandas 3 a frame grown row by row can hold employment
+    # as `object`, and object arithmetic raises ZeroDivisionError on 0/0 where
+    # float arithmetic returns NaN - the defined answer for an industry absent
+    # nationwide. The self-test fixture hit exactly this in CI.
+    out[EMPLOYMENT] = pd.to_numeric(out[EMPLOYMENT]).astype(float).fillna(0.0)
     return out
 
 
