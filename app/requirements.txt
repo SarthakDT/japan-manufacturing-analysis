@@ -1,0 +1,6 @@
+# Deployment requirements for the Streamlit app only. Streamlit Community Cloud
+# reads this file (it sits beside the entrypoint), so the deployed app does not
+# install scikit-learn, DuckDB or the notebook toolchain it never uses.
+streamlit>=1.40
+pandas>=2.2
+plotly>=5.20

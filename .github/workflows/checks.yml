@@ -1,0 +1,30 @@
+# Runs every check that works from a fresh clone, on every push and pull request.
+#
+# This is verification, not a data refresh: the source survey was abolished and
+# the panel ends at reference year 2020. What it guards is that the code, the
+# committed data and the committed dashboard extract still agree, and that the
+# repository runs for someone who has only cloned it (no raw data, no API key).
+name: checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run all clone-runnable checks
+        run: python src/run_checks.py

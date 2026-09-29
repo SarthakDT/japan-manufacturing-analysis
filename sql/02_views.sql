@@ -93,3 +93,38 @@ WINDOW w AS (
     PARTITION BY prefecture_code, industry_code, source_table, measure
     ORDER BY reference_year
 );
+
+-- Capital intensity and value added per worker by INDUSTRY and year, on the
+-- 30+ basis, over MATCHED cells only.
+--
+-- This is the dashboard extract's source for the industry-context page
+-- (src/build_dashboard_data.py reads it). Q1 in 03_questions.sql pools every
+-- year and sums capital and employment over whichever cells each measure
+-- happens to be published for; that is fine for a one-off ranking but lets a
+-- suppressed capital cell drop out of the numerator while its workers stay in
+-- the denominator. Here a cell counts only when capital, employment and value
+-- added are all published, so both ratios share one denominator.
+CREATE OR REPLACE VIEW v_industry_capital_intensity AS
+WITH cell AS (
+    SELECT reference_year, prefecture_code, industry_code,
+           MAX(value) FILTER (WHERE source_table = '3-03' AND measure = 'employment')             AS employment,
+           MAX(value) FILTER (WHERE source_table = '3-03' AND measure = 'value_added')            AS value_added,
+           MAX(value) FILTER (WHERE source_table = '3-04' AND measure = 'capital_stock_year_end') AS capital_stock
+    FROM fact_cells
+    WHERE source_table IN ('3-03', '3-04')
+      AND flag = 'ok'
+      AND industry_code <> '00'
+    GROUP BY 1, 2, 3
+)
+SELECT reference_year, industry_code,
+       COUNT(*)                                   AS cells_matched,
+       SUM(employment)                            AS employment_30plus,
+       SUM(value_added)                           AS value_added_30plus,
+       SUM(capital_stock)                         AS capital_stock_30plus,
+       SUM(capital_stock) / NULLIF(SUM(employment), 0) AS capital_per_worker_30plus,
+       SUM(value_added)   / NULLIF(SUM(employment), 0) AS va_per_worker_30plus
+FROM cell
+WHERE employment > 0
+  AND value_added IS NOT NULL
+  AND capital_stock IS NOT NULL
+GROUP BY 1, 2;

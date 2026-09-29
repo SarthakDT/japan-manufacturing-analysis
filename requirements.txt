@@ -8,6 +8,10 @@ matplotlib>=3.8
 duckdb>=1.0
 scikit-learn>=1.4
 
+# Dashboard: the Streamlit app and its headless tests (Session 09)
+streamlit>=1.40
+plotly>=5.20
+
 # Notebook execution (only needed to re-run notebooks/)
 nbformat>=5.10
 nbconvert>=7.16

@@ -25,7 +25,9 @@ removes any dependency on a CJK font being installed.
 
 from __future__ import annotations
 
-import matplotlib as mpl
+# matplotlib is imported inside the functions that use it, not here. The
+# Streamlit app imports this module for the palette and label maps alone, and
+# its lean deployment requirements do not include matplotlib.
 
 # --- palette -----------------------------------------------------------------
 
@@ -72,6 +74,8 @@ INDUSTRY_EN = {
 
 def apply_style() -> None:
     """Set matplotlib defaults: thin marks, hairline solid grid, recessive chrome."""
+    import matplotlib as mpl
+
     mpl.rcParams.update({
         "figure.facecolor": SURFACE,
         "axes.facecolor": SURFACE,

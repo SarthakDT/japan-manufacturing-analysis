@@ -37,7 +37,8 @@ this project actually made and corrected; those are the most useful entries here
 5. [Manufacturing domain knowledge](#5-manufacturing-domain-knowledge)
 6. [Visualization](#6-visualization)
 7. [Data engineering and mining](#7-data-engineering-and-data-mining)
-8. [Index: concept to location](#8-index-concept-to-location)
+8. [Business intelligence and reporting](#8-business-intelligence-and-reporting)
+9. [Index: concept to location](#9-index-concept-to-location)
 
 ---
 
@@ -1638,6 +1639,10 @@ What replaced it: one long fact table, one panel table, two thin lookups, four v
 as knowing how to build it. A reviewer who sees a star schema over 235 rows learns
 that the author follows recipes; one who sees this note learns the author thinks.
 
+**Postscript, Session 09.** The dashboard extract *is* a star schema, because Power
+BI's filter propagation needs one. Same principle, different consumer, different
+answer. See §8.1.
+
 **Learn more**
 - Kimball & Ross, *The Data Warehouse Toolkit* — read ch. 1 for when it applies
 - dbt's *Dimensional modelling* guide, for the modern reading
@@ -2039,7 +2044,336 @@ for the applied version
 
 ---
 
-# 8. Index: concept to location
+# 8. Business intelligence and reporting
+
+Added in Session 09, when the project gained a stakeholder and two dashboards: a
+Power BI report built from `dashboard/POWER_BI_GUIDE.md` and a Streamlit app in
+`app/`. Every entry ends with **Learn more**.
+
+---
+
+## 8.1 A star schema *in Power BI*, after §7.2 said no
+
+**What it is.** The same pattern as §7.2: fact tables holding measurements at a
+stated grain, and dimension tables holding the descriptive attributes you filter and
+group by (region, industry name, year).
+
+**Why yes here, when §7.2 said no.** §7.2 rejected a star schema for DuckDB because
+nothing in an ad-hoc SQL store needed one. Power BI is a different consumer.
+Its engine is built around relationships from dimensions to facts. A slicer filters
+other visuals by pushing a filter along those relationships. Two consequences:
+
+- A slicer on `region` can filter both `fact_prefecture_year` and
+  `fact_prefecture_industry` only if `region` sits in a shared `dim_prefecture` that
+  relates to both. Put `region` inside one fact table and the other ignores the slicer.
+- DAX measures are written against this shape. Microsoft's own modelling guidance
+  assumes it.
+
+The principle hasn't changed: build the structure the consuming tool needs. The tool
+changed, so the answer changed.
+
+**Worked example [real].** `dashboard/data/` holds 3 dimensions (47 prefectures, 24
+industries, 5 years) and 4 facts at different grains: prefecture × year (235 rows),
+prefecture × industry × year (4,512), industry × year (96) and waterfall step (752).
+There are four fact tables because there are four grains. Forcing them into one
+table would repeat prefecture totals on every industry row, and a SUM would then
+count them 24 times.
+
+**Where used.** `src/build_dashboard_data.py`, `dashboard/POWER_BI_GUIDE.md` §2.
+
+**Learn more**
+- Microsoft Learn, [*Understand star schema and the importance for Power BI*](https://learn.microsoft.com/power-bi/guidance/star-schema)
+- Kimball & Ross, *The Data Warehouse Toolkit*, ch. 1–3
+
+---
+
+## 8.2 Relationships, cardinality and filter direction
+
+**What it is.** A relationship tells Power BI that two columns hold the same key, for
+example `dim_prefecture[prefecture_code]` and `fact_prefecture_year[prefecture_code]`.
+Two properties define it:
+
+- **Cardinality.** One-to-many (*1:\**) means each prefecture appears once in the
+  dimension and many times in the fact. Every relationship in this model is 1:\*.
+- **Cross-filter direction.** **Single** means filters flow from the dimension to the
+  fact, never back. **Both** lets a fact filter a dimension. That is occasionally
+  useful, but it creates ambiguous paths, so this model uses Single throughout.
+
+**Pitfall: orphan keys.** Power BI raises no error for a fact row whose key is
+missing from the dimension. The row joins to a hidden "(Blank)" member, and its
+values drop out of every slicer without a warning. That is why
+`build_dashboard_data.py` checks referential integrity and refuses to write the
+extract if any key is orphaned.
+
+**Pitfall: codes read as numbers.** Power Query guesses column types. It will read
+`"09"` (food) as the number 9, while another table keeps it as the text `"09"`, and
+the relationship then silently fails to match. The build guide therefore sets every
+code column to Text before anything else.
+
+**Learn more**
+- Microsoft Learn, [*Model relationships in Power BI Desktop*](https://learn.microsoft.com/power-bi/transform-model/desktop-relationships-understand)
+- Microsoft Learn, the PL-300 learning path, module *Design a semantic model*
+
+---
+
+## 8.3 Measures, calculated columns, filter context and `CALCULATE`
+
+**What it is.** DAX, Power BI's formula language, has two kinds of calculation.
+
+- A **calculated column** is computed once per row when the data loads, like adding
+  a column in SQL. Use it for attributes you want to slice by.
+- A **measure** is computed at query time, for whatever the current visual cell
+  represents. Use it for anything that aggregates.
+
+The set of filters active for one cell of one visual is its **filter context**:
+slicer selections, the row of a table visual, the bar of a chart. A measure is
+evaluated separately in each context. That is the key idea. `[VA per Worker]` isn't
+a number; it's a rule that produces a different number for each bar.
+
+`CALCULATE(expression, modifiers…)` evaluates an expression in a modified filter
+context. It is how a measure reaches outside the current selection.
+
+**Worked example.** The national benchmark line on a prefecture chart:
+
+```dax
+National VA per Worker =
+CALCULATE ( [VA per Worker], REMOVEFILTERS ( dim_prefecture ) )
+```
+
+Inside the bar for Aichi, the filter context says "prefecture = Aichi".
+`REMOVEFILTERS` drops that, so the measure returns the national figure (12.99 for
+2019) on every bar. The year filter is kept.
+
+**The SQL analogy.** A measure behaves like a `GROUP BY` query whose `WHERE` clause
+is written by the user's clicks. `CALCULATE` edits that `WHERE` clause.
+
+**Learn more**
+- Russo & Ferrari, *The Definitive Guide to DAX*, 2nd ed., ch. 4–5 (evaluation contexts, `CALCULATE`)
+- SQLBI, [*Understanding evaluation contexts*](https://www.sqlbi.com/articles/understanding-evaluation-contexts-in-dax/)
+
+---
+
+## 8.4 Ratio of sums, not average of ratios, in a dashboard
+
+**What it is.** §3.8 in dashboard form. The value added per worker of any group of
+prefectures is total value added divided by total employment. It is not the mean of
+their individual ratios.
+
+**Worked example [real].** For 2019, the ratio of sums over all 47 prefectures is
+**12.99**. The unweighted mean of the 47 `va_per_worker` values is **12.24**. The
+mean gives Tottori (about 33,000 manufacturing workers) the same weight as Aichi
+(about 850,000).
+
+**Why dashboards make this worse.** Drag `va_per_worker` into a card and Power BI
+aggregates it with its default, Sum or Average. Neither is right. The fix is
+structural. Never expose the ratio column as a value field. Define
+
+```dax
+Total VA         = SUM ( fact_prefecture_year[value_added] )
+Total Employment = SUM ( fact_prefecture_year[employment] )
+VA per Worker    = DIVIDE ( [Total VA], [Total Employment] )
+```
+
+and hide the stored column.
+
+**Where used.** Both front-ends. `app/common.py` has one aggregation function,
+`va_per_worker()`, and `app/check_app.py` checks the Overview card reads 12.99. A
+deliberate mutation to a mean of ratios made that check fail at 12.24, which shows
+the check can catch the error.
+
+**Learn more**
+- §3.8 of this document
+- SQLBI, [*Computing ratios of sums vs averages of ratios*](https://www.sqlbi.com/) (search "average of ratios")
+
+---
+
+## 8.5 Additive, semi-additive and non-additive measures
+
+**What it is.** A classification of how a number may be aggregated.
+
+| Type | Can be summed across… | Example here |
+|---|---|---|
+| Additive | every dimension | value added, employment |
+| Semi-additive | some dimensions, not time | (none here; a stock such as headcount on a date would be one) |
+| Non-additive | nothing; recompute from parts | VA per worker, location quotient, mix effect, within effect, rank |
+
+**Why it matters here.** The shift-share mix and within effects are defined *per
+prefecture*, against a benchmark built on that prefecture's own industry set. The
+sum of Aichi's and Mie's mix effects is not the mix effect of "Aichi + Mie". It isn't
+anything. So those measures must return **blank** unless exactly one prefecture is
+in context:
+
+```dax
+Mix Effect =
+IF ( HASONEVALUE ( dim_prefecture[prefecture_code] ),
+     SUM ( fact_prefecture_year[mix_effect] ) )
+```
+
+Blank is the honest answer. A dashboard that shows a number for a meaningless
+aggregation is worse than one that shows nothing.
+
+**Learn more**
+- Kimball & Ross, *The Data Warehouse Toolkit*, ch. 1 (fact additivity)
+- SQLBI, [*Using HASONEVALUE*](https://www.sqlbi.com/articles/) (search HASONEVALUE)
+
+---
+
+## 8.6 Waterfall charts for decompositions
+
+**What it is.** A bar chart where each bar starts where the previous one ended. It
+shows how a starting value becomes an ending value through signed steps. It suits
+any exact additive decomposition, which is what a shift-share is.
+
+**Worked example [real]: Aichi, 2019.**
+
+| Step | Amount | Running total |
+|---|---|---|
+| National benchmark | 12.99 | 12.99 |
+| Industry mix | +0.42 | 13.41 |
+| Within-industry performance | +1.69 | 15.10 |
+| Suppression adjustment | +0.00 | **15.10** |
+
+**Why there is a fourth step.** The shift-share runs on published industry cells.
+The headline figure comes from the published prefecture total, which also includes
+establishments in suppressed cells. Without a closing step, the waterfall would end
+at the visible-cell figure: 20.45 for Yamaguchi, against 20.33 on the KPI card next
+to it. Two different numbers for "Yamaguchi's value added per worker" on one page
+would destroy trust in both. The adjustment is usually tiny, and where it isn't, it
+shows the reader that suppression exists.
+
+**Pitfall.** A waterfall implies the steps are separate and ordered. Here the order
+is a convention: mix then within is the standard presentation, but the
+decomposition is simultaneous, not sequential.
+
+**Where used.** `fact_waterfall.csv`, the Prefecture benchmark page of both dashboards.
+
+**Learn more**
+- Microsoft Learn, [*Waterfall charts in Power BI*](https://learn.microsoft.com/power-bi/visuals/power-bi-visualization-waterfall-charts)
+- Plotly, [*Waterfall charts in Python*](https://plotly.com/python/waterfall-charts/)
+
+---
+
+## 8.7 Diagnostic vs prescriptive analytics, and why this project stops at diagnostic
+
+**What it is.** A common ladder:
+
+| Level | Question | This project |
+|---|---|---|
+| Descriptive | What happened? | Rankings, trends |
+| Diagnostic | Why, or where does it come from? | **The shift-share quadrants** |
+| Predictive | What will happen? | Not attempted; the series ends in 2020 |
+| Prescriptive | What should we do? | **Deliberately not claimed** |
+
+**Why it stops at diagnostic.** The within-industry term is a residual after
+industry mix. It is not a clean measure of firm efficiency. A 2-digit JSIC industry
+bundles very different products. "Chemicals" covers petrochemicals and cosmetics,
+so a within-industry advantage may reflect *which* chemicals a prefecture makes, and
+it also absorbs plant scale and the age of the capital stock. A prescriptive claim
+("invest in firm upgrading") would need causal identification that nothing here
+provides (§3.12).
+
+So the quadrants are framed as **where to look first**, not what to do. A planner in
+"weak mix, strong performance" should look at the industry base. Whether changing it
+is possible, or wise, is a separate question.
+
+**Learn more**
+- Davenport & Harris, *Competing on Analytics*, ch. 1 (the analytics maturity ladder)
+- Angrist & Pischke, *Mastering 'Metrics*, ch. 1 (what it takes to move from association to cause)
+
+---
+
+## 8.8 Continuous integration, and why it isn't a refresh
+
+**What it is.** Continuous integration (CI) runs a project's checks automatically on
+every change pushed to the repository. GitHub Actions does this from a YAML file in
+`.github/workflows/`. On each push it starts a clean Linux machine, clones the
+repository, installs the requirements and runs the command you give it.
+
+**What it does here.** `.github/workflows/checks.yml` runs `python src/run_checks.py`:
+
+- every self-test
+- the warehouse rebuild and load checks
+- the dashboard extract's checks
+- a check that the committed extract matches a fresh build
+- the headless Streamlit tests
+
+**Why this and not a scheduled refresh.** A recruiter's reflex is "automate the data
+refresh". Here there is nothing to refresh. The Census of Manufacture was abolished,
+and its successor has no prefecture breakdown (§4.1). What *can* recur honestly is
+verification: that a fresh clone runs, that the code still agrees with the committed
+data, and that both dashboards still show the same numbers.
+
+**Worked example [real], the bug CI would have caught.** Before Session 09 the
+README told a new user to run `python src/build_panel.py` first. That script reads
+raw API pages, which are gitignored, so step one failed on every clone. It went
+unnoticed because every check had only ever been run on the author's machine, where
+the raw files exist. CI runs on a clean clone every time.
+
+**Learn more**
+- GitHub Docs, [*Understanding GitHub Actions*](https://docs.github.com/actions/learn-github-actions/understanding-github-actions)
+- GitHub Docs, [*Building and testing Python*](https://docs.github.com/actions/use-cases-and-examples/building-and-testing/building-and-testing-python)
+
+---
+
+## 8.9 Streamlit: the rerun model, caching and multipage apps
+
+**What it is.** A Python library that turns a script into a web app. Its execution
+model is unusual, and everything else follows from it. **On every interaction the
+whole script reruns from top to bottom.** Moving a slider doesn't call a handler. It
+reruns the script with the slider's new value.
+
+Three consequences shape `app/`:
+
+- **Caching.** Rerunning would reread the CSVs on every click.
+  `@st.cache_data` on `load()` in `app/common.py` makes each file load once.
+- **Session state.** Variables don't survive a rerun, but `st.session_state` does.
+  The chosen prefecture is stored there, under a plain key, so the Diagnosis page
+  can highlight it. A widget's own key would be cleared when you leave the page that
+  draws it.
+- **Multipage apps.** `st.navigation` in `app/streamlit_app.py` defines the pages.
+  Widgets drawn in the entrypoint, like the year selector, persist across pages.
+
+**Testing.** `streamlit.testing.v1.AppTest` runs the real script headlessly, with no
+browser, and exposes what it rendered: metrics, dataframes and chart specs.
+`app/check_app.py` uses it to run all 5 pages in all 5 years and to compare Aichi's
+figures with `dashboard/expected_values.md`.
+
+**Learn more**
+- Streamlit docs, [*Main concepts*](https://docs.streamlit.io/develop/concepts/architecture/run-your-app) and [*Caching overview*](https://docs.streamlit.io/develop/concepts/architecture/caching)
+- Streamlit docs, [*Multipage apps*](https://docs.streamlit.io/develop/concepts/multipage-apps) and [*App testing*](https://docs.streamlit.io/develop/concepts/app-testing)
+
+---
+
+## 8.10 One extract, two front-ends
+
+**What it is.** §7.3 (DRY) applied to dashboards. Every derived number (shift-share,
+location quotients, residuals, ranks, diagnosis) is computed once, in
+`src/build_dashboard_data.py`, by the modules that already own it. Both the Power BI
+report and the Streamlit app read the same CSVs. Neither computes an analytical
+result itself. The only arithmetic they do is aggregating a selection, as a ratio of
+sums.
+
+**Why.** If each front-end computed its own shift-share, they would drift, and a
+disagreement between them couldn't be settled by looking at either one. With one
+extract there is also one checklist, `dashboard/expected_values.md`. The Streamlit
+app is checked against it automatically, and the Power BI build is checked against
+it by hand, because Power BI can't run in CI.
+
+The extract is also where the SQL layer earns its place in the pipeline. Capital per
+worker by industry comes from the `v_industry_capital_intensity` view, so the full
+path is
+
+```
+e-Stat → validation → processed CSVs → DuckDB + SQL views → dashboard extract → Power BI / Streamlit
+```
+
+**Learn more**
+- Microsoft Learn, [*Semantic models in the Power BI service*](https://learn.microsoft.com/power-bi/connect-data/service-datasets-understand) (the "one dataset, many reports" pattern)
+- §7.3 of this document
+
+---
+
+# 9. Index: concept to location
 
 | Concept | Where |
 |---|---|
@@ -2102,6 +2436,16 @@ for the applied version
 | Median polish | §7.12 · `src/anomaly_detect.py`, Chart 10 |
 | Outlier detection families | §7.13 |
 | dbt, PySAL, co-location clustering | §7.14 — considered, not used |
+| **Star schema in Power BI** | **§8.1 — adopted here, after §7.2 rejected it for DuckDB** · `src/build_dashboard_data.py` |
+| Relationships, cardinality, filter direction | §8.2 · `dashboard/POWER_BI_GUIDE.md` §2 |
+| Measures, filter context, `CALCULATE` | §8.3 · `dashboard/POWER_BI_GUIDE.md` §3 |
+| **Ratio of sums in a dashboard** | **§8.4 · `app/common.py`, checked by `app/check_app.py`** |
+| Additive / non-additive measures, `HASONEVALUE` | §8.5 · mix and within effects |
+| Waterfall charts | §8.6 · `fact_waterfall.csv`, Prefecture benchmark page |
+| Diagnostic vs prescriptive | §8.7 · the diagnosis quadrants |
+| Continuous integration | §8.8 · `.github/workflows/checks.yml`, `src/run_checks.py` |
+| Streamlit | §8.9 · `app/` |
+| One extract, two front-ends | §8.10 · `dashboard/data/` |
 
 ---
 
@@ -2124,6 +2468,10 @@ Each taught a concept better than a definition could.
 3. **The shift-share benchmark mismatch** — a decomposition identity only holds
    against the benchmark the decomposition itself uses. Caught by asserting the
    identity instead of trusting plausible-looking output.
+4. **The quick start that failed on every clone** — the README's first command
+   read gitignored raw files, and nobody noticed because every check ran on the
+   author's machine. Caught by a review, and now guarded by CI on a clean clone
+   (§8.8).
 
 ---
 

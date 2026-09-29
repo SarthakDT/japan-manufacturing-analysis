@@ -1,9 +1,10 @@
-# Complete work log — Sessions 01–08
+# Complete work log — Sessions 01–09
 
-**Dates:** 2026-09-14 to 2026-09-28
+**Dates:** 2026-09-14 to 2026-09-29
 **Starting state:** four loose files in the project root, no code, no data, no directories
 **Ending state:** a 235-row prefecture × year panel (2016–2020), 7 source modules with
-self-tests, 2 descriptive notebooks, 5 charts, and a concepts reference — with all
+self-tests, 4 notebooks, a DuckDB/SQL layer, a dashboard extract feeding a Streamlit
+app and a Power BI build guide, CI on every push, and a concepts reference — with all
 hypothesis-testing work removed after a robustness review
 
 | Session | Scope | Outcome |
@@ -16,6 +17,7 @@ hypothesis-testing work removed after a robustness review
 | 06 | Capital, convergence, reference year 2020 | panel to 235 rows; ESS shown impossible |
 | 07 | Robustness review and removal | hypothesis-testing work deleted; see Part 20 |
 | 08 | Consolidation, SQL layer, data mining | duplication removed; DuckDB store; clustering and anomaly detection |
+| 09 | Stakeholder, decision layer, dashboards | planner framing; star-schema extract; Streamlit app + Power BI guide; CI; fresh-clone bug fixed |
 
 **Read this as a chronological record, not a statement of current belief.** It
 deliberately preserves dead ends, tooling accidents, and claims that were later
@@ -1722,6 +1724,223 @@ three roads not taken (dbt, PySAL/Moran's I, co-location clustering).
 
 Every entry carries a **Learn more** reading list, at the user's explicit request. The
 document is now 68 entries and about 14,100 words.
+
+---
+
+# SESSION 09 — a stakeholder, a decision layer and two dashboards
+
+---
+
+## Part 26 — The review, and where this session departed from it
+
+A recruiter-perspective review rated the work about 9/10 on quality but about 7/10
+on fit for a Data Analyst portfolio. The bottom of the stack (acquisition,
+validation, SQL, reproducibility) was strong. The top layer was missing: no
+stakeholder, no dashboard, no decision. It also flagged over-sophisticated analysis
+leading the README and some overbroad language. The fix chosen was **packaging, not
+more analysis**.
+
+Four departures from the review, each for a stated reason:
+
+| Review recommended | Done instead | Why |
+|---|---|---|
+| Stakeholder: a firm choosing where to expand | **A prefectural planner** benchmarking the sector | Value added per worker is not a siting criterion. Yamaguchi's figure comes from chemicals a new plant would not inherit. A planner's question is exactly what the shift-share answers. |
+| Automate a recurring refresh | **One check command, run by CI on every push** | The source survey was abolished, so a refresh would refresh nothing. Verification is what can recur honestly. |
+| A map on page 1 | Optional; the ranked bar is primary | Geocoding needs manual verification, and area maps overweight Hokkaido. |
+| A dashboard | **Two front-ends on one extract** | Power BI, built by the user from a written spec, and a Streamlit app built and tested here. |
+
+### A bug the review missed
+
+The README's quick start said the analysis "runs with no API key" and listed
+`python src/build_panel.py` first. That script, and `econ_census.py`, read raw API
+pages, which are gitignored. **Step one failed on every fresh clone.** Nobody noticed
+because every check had run on the author's machine, where the raw files exist. The
+quick start is now split into what runs from a clone and what needs re-acquisition.
+CI now runs everything on a clean clone.
+
+### Overbroad language corrected
+
+The README said n = 47 left "not enough statistical power for hypothesis testing".
+That is broader than the evidence. The precise statement: the original 15 tests at
+n = 47 produced nominally significant results that did not survive correction for
+multiple comparisons, so the project does not treat those associations as robust
+evidence.
+
+A second, smaller one surfaced while writing the new README: "within-industry
+dominates in 37 of 47, stable across all four years". The count is actually 37, 36,
+36 and 37. It is now stated as "36–37 of 47 in every year".
+
+---
+
+## Part 27 — The dashboard extract
+
+`src/build_dashboard_data.py` writes seven CSVs to `dashboard/data/`: 3 dimensions
+and 4 facts, one per grain. **A star schema, after Session 08 rejected one.** Same
+principle, different consumer. Power BI's slicers filter along relationships from
+dimensions to facts, so a shared `dim_prefecture` is what lets a region slicer
+filter every fact table. Documented in concepts §7.2 (postscript) and §8.1.
+
+Nothing is re-derived. Shift-share comes from `shift_share.decompose()`, LQ and
+shares from `metrics.py`, and residuals from `anomaly_detect.analyse()`. Capital
+intensity comes from a new SQL view, `v_industry_capital_intensity`, over an
+in-memory DuckDB built from the committed CSVs. That gives the SQL layer a place in
+the delivered pipeline, not only in exploration.
+
+**The waterfall has four steps, not three.** The shift-share runs on published
+industry cells; the headline figure uses the published prefecture total, which also
+includes suppressed establishments. For Yamaguchi, 2019, they are 20.45 and 20.33.
+A three-step waterfall would end at a different number from the KPI card beside it.
+A fourth step, the *suppression adjustment*, closes the gap.
+
+**32 checks, and the script refuses to write if any fail:**
+
+- key uniqueness at every grain
+- referential integrity (Power BI turns orphan keys into silent "(Blank)" rows, not errors)
+- reconciliation to the panel, with worst difference 0.0
+- waterfall sums to the published figure for all 188 prefecture-years (worst 3.6e-15)
+- 2020 carries null, never zero, decomposition values
+- the full 47 × 24 grid
+
+**Expected values re-derived independently.** A scratch script with no project
+imports recomputed Aichi, Yamaguchi and Okinawa from the raw CSVs. All matched:
+Aichi 15.10, rank 7, 12.78%, mix +0.42, within +1.69.
+
+**A discrepancy found and kept visible.** The capital–value added rank correlation
+for 2019 on matched cells is **+0.63**, not the README's +0.72. The +0.72 pools
+2016–2019 in SQL Q1, which also sums capital and employment over unmatched cells.
+Year by year on matched cells it runs from +0.63 to +0.73. The finding holds. The
+README now states the range, and `expected_values.md` explains why the dashboard
+shows the single-year value.
+
+A `-0.00` in the generated table (Aichi's suppression adjustment, −0.000003) was
+fixed by rounding before formatting.
+
+Panel md5 unchanged: `160c8d10…`.
+
+---
+
+## Part 28 — Power BI guide and Streamlit app
+
+**`dashboard/POWER_BI_GUIDE.md`** is written for someone who knows SQL but not Power
+BI. It covers:
+
+- Importing with code columns forced to Text. Power Query turns "09" into 9 and
+  breaks relationships.
+- Nine single-direction 1:\* relationships, with a Mermaid diagram.
+- Measures written as ratios of sums, with ratio columns hidden so they can't be
+  averaged.
+- `REMOVEFILTERS` for the national figure and `RANKX(ALL(...))` so rank stays out of 47.
+- `HASONEVALUE` guards on the non-additive shift-share terms.
+- Five pages, the palette from `viz_style.py`, publishing options, and a 12-item
+  checklist.
+
+To let DAX aggregate capital per worker as a ratio of sums, the view and the extract
+gained summed capital, value added and employment columns. The ratio column alone
+could only have been averaged.
+
+**`app/`**, the Streamlit app, has the same five pages, via `st.navigation`. It reads
+only `dashboard/data/`. Its one computation is `va_per_worker()`, a ratio of sums.
+`viz_style.py` now imports matplotlib lazily, so the app can share the palette
+without its lean deployment requirements installing matplotlib.
+
+- **A state bug caught in design.** The Diagnosis page highlights the prefecture
+  chosen on the Benchmark page. Streamlit clears a widget's state when the page that
+  draws it is left, so the choice is copied to a plain session key.
+- **`app/check_app.py`** uses `AppTest` to render all 5 pages in all 5 years (25
+  runs, no exceptions). It also checks the Overview national figure, the seven Aichi
+  benchmark metrics, the waterfall closure and the quadrant counts. The expected
+  figures are parsed from `expected_values.md`, not restated.
+- **Mutation test.** Changing the aggregation to a mean of ratios made the Overview
+  check fail at **12.24** against 12.99. The check can catch the error it exists for.
+
+### Visual check
+
+Headless Edge screenshots of the live app captured a blank page, because Streamlit
+renders over a websocket after load. Instead, each chart's figure spec was pulled
+out of `AppTest`, written to standalone HTML and screenshotted. Two defects were
+found and fixed:
+
+- **Margins too tight.** Minus signs and leading digits were clipped off tick
+  labels, and axis titles overlapped them.
+- **Label collisions.** All 24 labels on the capital scatter collided. It now labels
+  the extremes plus transport equipment; the rest show on hover.
+
+---
+
+## Part 29 — One command, run on every push
+
+`src/run_checks.py` runs 11 steps as subprocesses, so each step's own exit code
+counts:
+
+- all five self-tests
+- the shift-share identity on real data
+- the warehouse rebuild, load checks and questions
+- the extract's checks
+- a **staleness check**: the committed extract must match a fresh build
+- the app tests
+
+The staleness check was itself mutation-tested. The first attempt edited a line
+ending in scientific notation that the regex didn't match, so nothing changed and
+the check passed. That was a broken test, not a broken check. Retried on a matching
+line, it failed as it should.
+
+`.github/workflows/checks.yml` runs the same command on Python 3.11 on every push and
+pull request. `requirements.txt` gained `streamlit` and `plotly`; `app/requirements.txt`
+lists only what the deployed app needs.
+
+---
+
+## Part 30 — README, executive summary, concepts
+
+The **README was reordered** so the decision comes before the method:
+
+1. the question
+2. the stakeholder, labelled illustrative
+3. six insights ending in one implication
+4. the quadrant table with its caveat
+5. the dashboards
+6. how it's built
+7. an appendix for clustering, median polish and variance decomposition
+8. limitations
+
+The dashboard section describes what exists and **claims no screenshots or live link
+before they exist**.
+
+One more overclaim was caught in the draft. Insight 1 said the top three prefectures
+all run process industries. By location quotient, Tokushima's most specialised
+industry is electronic components and Shiga's is plastics. It now says only that
+Yamaguchi's lead rests on chemicals (LQ 3.2).
+
+**`docs/executive-summary.md`**: one page for the planner, ending with what the
+analysis cannot say.
+
+**Notebooks 03 and 04** are retitled Appendix A and B, keeping their paths so
+existing links hold.
+
+**`docs/concepts.md` §8, Business intelligence and reporting:** 10 entries, each with
+**Learn more**:
+
+- star schema in Power BI
+- relationships
+- measures and `CALCULATE`
+- ratio of sums
+- additivity
+- waterfalls
+- diagnostic vs prescriptive
+- CI
+- Streamlit
+- one extract, two front-ends
+
+The index moved to §9. The mistakes list gained the fresh-clone quick start. The
+document now has 78 entries.
+
+### Left for the user
+
+- **Build the Power BI report** from the guide and tick the checklist. It can't be
+  built or verified here.
+- **Deploy the app** to Streamlit Community Cloud (entrypoint
+  `app/streamlit_app.py`). This needs the user's GitHub login. The README gets the
+  link only after the deploy.
 
 ---
 

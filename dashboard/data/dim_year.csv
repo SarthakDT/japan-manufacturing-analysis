@@ -1,0 +1,6 @@
+﻿reference_year,instrument,has_industry_detail,source_edition
+2016,CoM,True,"Census of Manufacture, 2017 edition"
+2017,CoM,True,"Census of Manufacture, 2018 edition"
+2018,CoM,True,"Census of Manufacture, 2019 edition"
+2019,CoM,True,"Census of Manufacture, 2020 edition"
+2020,EconCensus,False,2021 Economic Census for Business Activity
