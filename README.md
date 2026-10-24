@@ -88,10 +88,9 @@ of the two place every prefecture in one of four quadrants:
 
 ## Dashboard
 
-Two front-ends read one extract, [`dashboard/data/`](dashboard/data/), a star schema
+The Streamlit app and Tableau dashboard read one shared extract, [`dashboard/data/`](dashboard/data/), a star schema
 built by [`src/build_dashboard_data.py`](src/build_dashboard_data.py). Every
-analytical number is computed once, there. The dashboards only filter and
-aggregate. Both have the same five pages:
+analytical number is computed once there; the front-ends filter and aggregate the results. The Streamlit app has five pages:
 
 | Page | What it answers |
 |---|---|
