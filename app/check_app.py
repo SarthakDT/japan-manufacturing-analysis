@@ -6,7 +6,7 @@ browser or a server. Two kinds of check:
 
   1. Every page, in every reference year, renders without raising.
   2. The numbers a user would read match dashboard/expected_values.md — the same
-     checklist the Power BI build is verified against, so the two front-ends
+     checklist used to validate the Tableau front-end, so both dashboards
      are held to one set of figures. The expected values are parsed from that
      file rather than restated here, so there is one copy of them.
 
