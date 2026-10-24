@@ -2355,7 +2355,7 @@ e-Stat → validation → processed CSVs → DuckDB + SQL views → dashboard ex
 | Relationships, key types and filter behavior | §8.2 · `dashboard/TABLEAU_GUIDE.md` §1 |
 | Calculated fields, aggregation and view context | §8.3 · `dashboard/TABLEAU_GUIDE.md` §2 |
 | **Ratio of sums in a dashboard** | **§8.4 · `app/common.py`, checked by `app/check_app.py`** |
-| Additive / non-additive measures, `HASONEVALUE` | §8.5 · mix and within effects |
+| Guarding non-additive effects to one prefecture | §8.5 · mix and within effects |
 | Waterfall charts | §8.6 · `fact_waterfall.csv`, Prefecture benchmark page |
 | Diagnostic vs prescriptive | §8.7 · the diagnosis quadrants |
 | Continuous integration | §8.8 · `.github/workflows/checks.yml`, `src/run_checks.py` |
