@@ -109,7 +109,7 @@ def build_dim_prefecture(panel: pd.DataFrame) -> pd.DataFrame:
     d["name_en"] = d.name_ja.map(ROMAJI)
     d["region"] = d.prefecture_code.map(region_of)
     d["region_order"] = d.region.map({name: i + 1 for i, (name, _) in enumerate(REGIONS)})
-    # "Aichi Prefecture, Japan" geocodes unambiguously in Power BI's map visuals;
+    # "Aichi Prefecture, Japan" is a more unambiguous map location than a bare city name;
     # a bare "Aichi" can resolve to a city of the same name.
     d["map_location"] = d.name_en.map(lambda n: f"{n} Prefecture, Japan")
     return d
