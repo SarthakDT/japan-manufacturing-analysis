@@ -4,7 +4,7 @@ common.py — data access, the one aggregation rule, and chart styling for the a
 WHAT THE APP IS ALLOWED TO COMPUTE
 Nothing analytical. Shift-share, location quotients, residuals, ranks and the
 diagnosis all arrive precomputed in dashboard/data/, written by
-src/build_dashboard_data.py, which also feeds the Power BI report and Tableau guide. The
+src/build_dashboard_data.py, which also feeds the Power BI and Tableau dashboards. The
 only arithmetic here is aggregating a selection, and that follows one rule:
 
     value added per worker of a group = SUM(value added) / SUM(employment)
