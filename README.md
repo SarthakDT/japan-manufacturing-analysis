@@ -103,8 +103,8 @@ aggregate. Both have the same five pages:
 
 - **Streamlit app**, in [`app/`](app/). Run it locally with
   `streamlit run app/streamlit_app.py`. Every page is tested headlessly in CI.
-- **Power BI**: build it from [`dashboard/POWER_BI_GUIDE.md`](dashboard/POWER_BI_GUIDE.md),
-  which gives the data model, the DAX measures and the page layouts.
+- **Power BI**: build it from [`dashboard/POWER_BI_GUIDE.md`](dashboard/POWER_BI_GUIDE.md), which gives the data model, DAX measures and page layouts.
+- **Tableau**: build it from [`dashboard/TABLEAU_GUIDE.md`](dashboard/TABLEAU_GUIDE.md), which covers the data model, calculated fields, four dashboard designs and validation checks.
 
 Both are checked against one list of figures,
 [`dashboard/expected_values.md`](dashboard/expected_values.md): automatically for
