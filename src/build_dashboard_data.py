@@ -1,13 +1,13 @@
 """
-build_dashboard_data.py — the one extract both dashboards read.
+build_dashboard_data.py — the one extract all dashboards read.
 
 WHY THIS EXISTS
-The project has two front-ends: a Power BI report the author builds by hand from
-dashboard/POWER_BI_GUIDE.md, and a Streamlit app in app/. If each computed its
-own shift-share, location quotients or residuals, the two would drift, and
-neither could be checked against the other. So every derived number is computed
-here, once, by the modules that already own it, and both front-ends only filter
-and aggregate what this script writes.
+The project has three front-ends: a Power BI report built from
+dashboard/POWER_BI_GUIDE.md, a Tableau workbook built from
+dashboard/TABLEAU_GUIDE.md, and a Streamlit app in app/. If each computed its
+own shift-share, location quotients or residuals, the results would drift.
+Every derived number is computed here, once, by the modules that already own it;
+all front-ends should only filter and aggregate what this script writes.
 
     e-Stat -> validation -> processed CSVs -> DuckDB + SQL views -> THIS -> dashboards
 
@@ -19,7 +19,7 @@ that lives only inside a fact table cannot filter a second fact table. Same
 principle - build the structure the consuming tool needs - different tool,
 different answer. See docs/concepts.md section 8.
 
-TABLES (dashboard/data/, UTF-8 with BOM so Excel and Power BI read Japanese)
+TABLES (dashboard/data/, UTF-8 with BOM for Japanese labels across Excel, BI tools)
     dim_prefecture             47 rows   code, names, region, map location
     dim_industry               24 rows   JSIC 2-digit code, names
     dim_year                    5 rows   instrument, whether industry detail exists
