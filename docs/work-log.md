@@ -4,7 +4,7 @@
 **Starting state:** four loose files in the project root, no code, no data, no directories
 **Ending state:** a 235-row prefecture × year panel (2016–2020), 7 source modules with
 self-tests, 4 notebooks, a DuckDB/SQL layer, a dashboard extract feeding a Streamlit
-app and a Power BI build guide, CI on every push, and a concepts reference — with all
+app and a Tableau build guide, CI on every push, and a concepts reference — with all
 hypothesis-testing work removed after a robustness review
 
 | Session | Scope | Outcome |
@@ -17,7 +17,7 @@ hypothesis-testing work removed after a robustness review
 | 06 | Capital, convergence, reference year 2020 | panel to 235 rows; ESS shown impossible |
 | 07 | Robustness review and removal | hypothesis-testing work deleted; see Part 20 |
 | 08 | Consolidation, SQL layer, data mining | duplication removed; DuckDB store; clustering and anomaly detection |
-| 09 | Stakeholder, decision layer, dashboards | planner framing; star-schema extract; Streamlit app + Power BI guide; CI; fresh-clone bug fixed |
+| 09 | Stakeholder, decision layer, dashboards | planner framing; star-schema extract; Streamlit app + Tableau guide; CI; fresh-clone bug fixed |
 
 **Read this as a chronological record, not a statement of current belief.** It
 deliberately preserves dead ends, tooling accidents, and claims that were later
@@ -1747,7 +1747,7 @@ Four departures from the review, each for a stated reason:
 | Stakeholder: a firm choosing where to expand | **A prefectural planner** benchmarking the sector | Value added per worker is not a siting criterion. Yamaguchi's figure comes from chemicals a new plant would not inherit. A planner's question is exactly what the shift-share answers. |
 | Automate a recurring refresh | **One check command, run by CI on every push** | The source survey was abolished, so a refresh would refresh nothing. Verification is what can recur honestly. |
 | A map on page 1 | Optional; the ranked bar is primary | Geocoding needs manual verification, and area maps overweight Hokkaido. |
-| A dashboard | **Two front-ends on one extract** | Power BI, built by the user from a written spec, and a Streamlit app built and tested here. |
+| A dashboard | **Two front-ends on one extract** | Tableau, documented in a build guide, and a Streamlit app built and tested here. |
 
 ### A bug the review missed
 
@@ -1776,9 +1776,9 @@ dominates in 37 of 47, stable across all four years". The count is actually 37, 
 
 `src/build_dashboard_data.py` writes seven CSVs to `dashboard/data/`: 3 dimensions
 and 4 facts, one per grain. **A star schema, after Session 08 rejected one.** Same
-principle, different consumer. Power BI's slicers filter along relationships from
-dimensions to facts, so a shared `dim_prefecture` is what lets a region slicer
-filter every fact table. Documented in concepts §7.2 (postscript) and §8.1.
+principle, different consumer. Tableau filters can propagate along relationships from
+dimensions to facts, so a shared `dim_prefecture` lets a region filter reach every
+fact table. Documented in concepts §7.2 (postscript) and §8.1.
 
 Nothing is re-derived. Shift-share comes from `shift_share.decompose()`, LQ and
 shares from `metrics.py`, and residuals from `anomaly_detect.analyse()`. Capital
@@ -1795,7 +1795,7 @@ A fourth step, the *suppression adjustment*, closes the gap.
 **32 checks, and the script refuses to write if any fail:**
 
 - key uniqueness at every grain
-- referential integrity (Power BI turns orphan keys into silent "(Blank)" rows, not errors)
+- referential integrity (orphan keys can silently appear as blank members or disappear from filtered views)
 - reconciliation to the panel, with worst difference 0.0
 - waterfall sums to the published figure for all 188 prefecture-years (worst 3.6e-15)
 - 2020 carries null, never zero, decomposition values
@@ -1819,24 +1819,24 @@ Panel md5 unchanged: `160c8d10…`.
 
 ---
 
-## Part 28 — Power BI guide and Streamlit app
+## Part 28 — Tableau guide and Streamlit app
 
-**`dashboard/POWER_BI_GUIDE.md`** is written for someone who knows SQL but not Power
-BI. It covers:
+`dashboard/TABLEAU_GUIDE.md` documents how to build the Tableau edition from the
+canonical star-schema extract in `dashboard/data/`. It covers:
 
-- Importing with code columns forced to Text. Power Query turns "09" into 9 and
-  breaks relationships.
-- Nine single-direction 1:\* relationships, with a Mermaid diagram.
-- Measures written as ratios of sums, with ratio columns hidden so they can't be
-  averaged.
-- `REMOVEFILTERS` for the national figure and `RANKX(ALL(...))` so rank stays out of 47.
-- `HASONEVALUE` guards on the non-additive shift-share terms.
-- Five pages, the palette from `viz_style.py`, publishing options, and a 12-item
-  checklist.
+- importing all seven tables while preserving prefecture and industry codes as strings
+- relationships between shared dimensions and the facts at their separate grains
+- ratio-of-sums productivity and use of the precomputed analytical results
+- four interactive dashboard designs: Overview, Prefecture Explorer, Mix vs
+  Within-Industry Diagnosis, and Industry Economics
+- caution around suppressed values, non-additive shift-share effects and missing
+  prefecture-by-industry detail in reference year 2020
+- numerical verification against `dashboard/expected_values.md`
 
-To let DAX aggregate capital per worker as a ratio of sums, the view and the extract
-gained summed capital, value added and employment columns. The ratio column alone
-could only have been averaged.
+The extract already carries the numerator and denominator for the capital-intensity
+ratios, so Tableau can aggregate capital per worker as a ratio of sums rather than
+averaging a stored ratio. No separate analytical implementation is needed in the
+workbook.
 
 **`app/`**, the Streamlit app, has the same five pages, via `st.navigation`. It reads
 only `dashboard/data/`. Its one computation is `va_per_worker()`, a ratio of sums.
@@ -1945,9 +1945,9 @@ existing links hold.
 **`docs/concepts.md` §8, Business intelligence and reporting:** 10 entries, each with
 **Learn more**:
 
-- star schema in Power BI
-- relationships
-- measures and `CALCULATE`
+- star schema for dashboards
+- relationships and key types
+- calculated fields and view context
 - ratio of sums
 - additivity
 - waterfalls
@@ -1961,8 +1961,7 @@ document now has 78 entries.
 
 ### Left for the user
 
-- **Build the Power BI report** from the guide and tick the checklist. It can't be
-  built or verified here.
+- **Build the Tableau dashboards** from the guide and tick the validation checklist.
 - **Deploy the app** to Streamlit Community Cloud (entrypoint
   `app/streamlit_app.py`). This needs the user's GitHub login. The README gets the
   link only after the deploy.

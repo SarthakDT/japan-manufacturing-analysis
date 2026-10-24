@@ -13,7 +13,7 @@ whichever question you have.
 
 | Document | What it answers |
 |---|---|
-| [../dashboard/POWER_BI_GUIDE.md](../dashboard/POWER_BI_GUIDE.md) | How to build the Power BI report: import, data model, DAX measures with the reason for each, page layouts, publishing, and a checklist. |
+| [../dashboard/TABLEAU_GUIDE.md](../dashboard/TABLEAU_GUIDE.md) | How to build the Tableau dashboard: data model, calculated fields, layouts and validation checklist. |
 | [../dashboard/expected_values.md](../dashboard/expected_values.md) | The figures a correct dashboard must show. Generated, and checked automatically against the Streamlit app. |
 | `app/` | The Streamlit app: `streamlit run app/streamlit_app.py`. |
 
@@ -21,7 +21,7 @@ whichever question you have.
 
 | Document | What it answers |
 |---|---|
-| [concepts.md](concepts.md) | Every statistical, economic, manufacturing and data-engineering concept used, from first principles, with worked examples and pointers to where each was applied. 78 entries, each with a **Learn more** reading list. §8 covers business intelligence: the star schema in Power BI, DAX, ratio of sums, CI and Streamlit. |
+| [concepts.md](concepts.md) | Every statistical, economic, manufacturing and data-engineering concept used, from first principles, with worked examples and pointers to where each was applied. 78 entries, each with a **Learn more** reading list. §8 covers dashboard data modeling, filter context, ratio of sums, CI, Tableau and Streamlit. |
 | [measurement-framework.md](measurement-framework.md) | Why value added per worker is the dependent variable, which independent variables were built, and why the original hypotheses were retired. |
 
 ## Understanding the data
