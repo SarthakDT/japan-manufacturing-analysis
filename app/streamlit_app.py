@@ -1,8 +1,7 @@
 """
 Japanese manufacturing: where does a prefecture's gap come from?
 
-Streamlit front-end over dashboard/data/, the same extract the Power BI report
-reads. Run from the repository root:
+Streamlit front-end over the shared dashboard/data/ extract. Run from the repository root:
 
     streamlit run app/streamlit_app.py
 """
