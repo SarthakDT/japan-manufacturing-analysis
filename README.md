@@ -103,17 +103,14 @@ aggregate. Both have the same five pages:
 
 - **Streamlit app**, in [`app/`](app/). Run it locally with
   `streamlit run app/streamlit_app.py`. Every page is tested headlessly in CI.
-- **Power BI**: build it from [`dashboard/POWER_BI_GUIDE.md`](dashboard/POWER_BI_GUIDE.md), which gives the data model, DAX measures and page layouts.
 - **Tableau**: build it from [`dashboard/TABLEAU_GUIDE.md`](dashboard/TABLEAU_GUIDE.md), which covers the data model, calculated fields, four dashboard designs and validation checks.
 
-All front-ends use one list of figures,
-[`dashboard/expected_values.md`](dashboard/expected_values.md): Streamlit is checked
-automatically in CI; Power BI and Tableau use the same manual validation benchmarks.
+Both front-ends use one list of figures, [`dashboard/expected_values.md`](dashboard/expected_values.md): Streamlit is checked automatically in CI, while Tableau uses the same validation benchmarks.
 
 ## How it's built
 
 ```
-e-Stat API → validation → processed CSVs → DuckDB + SQL views → dashboard extract → Power BI / Streamlit
+e-Stat API → validation → processed CSVs → DuckDB + SQL views → dashboard extract → Tableau / Streamlit
 ```
 
 - **Acquisition.** [`src/fetch_estat.py`](src/fetch_estat.py) calls the e-Stat API
@@ -252,8 +249,8 @@ choice of scope.
 Full index at **[docs/README.md](docs/README.md)**. The most useful entry points:
 
 - [docs/executive-summary.md](docs/executive-summary.md): the one-page version for the planner
-- [docs/concepts.md](docs/concepts.md): every concept used, from first principles, with reading lists. §8 covers the dashboards: star schema in Power BI, DAX filter context, ratio of sums, CI
-- [dashboard/POWER_BI_GUIDE.md](dashboard/POWER_BI_GUIDE.md): the Power BI build
+- [docs/concepts.md](docs/concepts.md): every concept used, from first principles, with reading lists. §8 covers dashboard data modeling, filter context, ratio of sums and CI
+- [dashboard/TABLEAU_GUIDE.md](dashboard/TABLEAU_GUIDE.md): the Tableau build
 - [docs/reference-years.md](docs/reference-years.md): the year-label problem and its proof
 - [docs/work-log.md](docs/work-log.md): the chronological development record, including the mistakes
 
