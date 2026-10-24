@@ -1,5 +1,4 @@
-# Light theme matched to src/viz_style.py so the app, the static charts and the
-# Power BI report read as one project.
+# Light theme aligned with the shared chart styling in src/viz_style.py.
 [theme]
 base = "light"
 primaryColor = "#2a78d6"
