@@ -17,7 +17,7 @@ propagate through shared dimensions to the relevant fact tables, rather than
 being trapped inside a single fact table. Same principle - build the structure
 the consuming tool needs - different tool, different answer. See docs/concepts.md section 8.
 
-TABLES (dashboard/data/, UTF-8 with BOM for Japanese labels across Excel, BI tools)
+TABLES (dashboard/data/, UTF-8 with BOM for Japanese labels across spreadsheet and dashboard tools)
     dim_prefecture             47 rows   code, names, region, map location
     dim_industry               24 rows   JSIC 2-digit code, names
     dim_year                    5 rows   instrument, whether industry detail exists
